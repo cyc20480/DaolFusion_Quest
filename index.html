@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>DaolFusion Quest — AI 세일즈 마스터</title>
+<style>
+:root{--bg:#0d1b2a;--card:#16222f;--card2:#12314d;--line:#2a3a4d;--blue:#0d84d8;--brand:#0060a0;--txt:#e6f1fb;--sub:#8fb6d4;--dim:#5a6b7d;--good:#1d9e75;--bad:#d85a30;--gold:#efb832;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{background:var(--bg);color:var(--txt);font-family:'Segoe UI','Apple SD Gothic Neo','Malgun Gothic',sans-serif;min-height:100%;}
+#wrap{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;}
+#hud{position:sticky;top:0;z-index:10;background:rgba(13,27,42,.97);border-bottom:1px solid var(--line);padding:10px 14px;}
+#hud .r1{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+#hud .lv{font-size:13px;color:#4da3dd;font-weight:600;}
+#hud .pts{font-size:13px;background:var(--card2);color:#85b7eb;padding:2px 10px;border-radius:10px;white-space:nowrap;}
+#hud .pass{font-size:11px;color:var(--dim);margin-top:4px;display:flex;justify-content:space-between;}
+#hud .bar{position:relative;height:6px;background:#1a2836;border-radius:3px;margin-top:4px;}
+#hud .bar .fill{height:6px;background:var(--blue);border-radius:3px;transition:width .3s;}
+#hud .bar .mark{position:absolute;top:-3px;width:2px;height:12px;background:var(--gold);}
+#app{flex:1;padding:16px 14px 90px;}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px;}
+.qcard{background:var(--card2);border-radius:12px;padding:18px 16px;font-size:16px;line-height:1.6;margin-bottom:14px;}
+.btn{display:block;width:100%;background:var(--card);border:1px solid var(--line);border-radius:10px;color:var(--txt);padding:14px;font-size:15px;text-align:left;margin-bottom:9px;cursor:pointer;line-height:1.45;}
+.btn:active{transform:scale(.985);}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff;text-align:center;font-weight:600;}
+.btn.ok{border-color:var(--good);background:#0f3328;}
+.btn.no{border-color:var(--bad);background:#3a1c10;}
+.btn.dis{opacity:.45;pointer-events:none;}
+.tag{display:inline-block;font-size:11px;background:var(--card2);color:#85b7eb;padding:2px 8px;border-radius:8px;margin-right:4px;}
+.tag.g{background:#0f3328;color:#9fe1cb;}.tag.o{background:#3a1c10;color:#f0997b;}.tag.y{background:#3a2f10;color:#f5d47b;}
+.exp{background:#0f2438;border-left:3px solid var(--blue);padding:12px;font-size:14px;line-height:1.6;margin:10px 0;border-radius:0 8px 8px 0;}
+.exp b{color:#4da3dd;}
+.say{background:#0f3328;border-left:3px solid var(--good);padding:12px;font-size:14px;line-height:1.6;margin:10px 0;border-radius:0 8px 8px 0;}
+.say b{color:#9fe1cb;}
+h2{font-size:19px;margin-bottom:10px;}
+h3{font-size:15px;color:#4da3dd;margin-bottom:8px;}
+.sub{font-size:13px;color:var(--sub);line-height:1.6;}
+.dim{font-size:12px;color:var(--dim);line-height:1.5;}
+.center{text-align:center;}
+.lvnode{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 14px;margin-bottom:9px;cursor:pointer;}
+.lvnode.lock{opacity:.45;cursor:default;}
+.lvnode.cur{border-color:var(--brand);background:#0e2a44;}
+.lvnode .ico{width:38px;height:38px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.lvnode.done .ico{background:var(--good);}
+.lvnode .nm{font-size:14px;font-weight:600;}
+.lvnode .st{font-size:11px;color:var(--dim);margin-top:2px;}
+.gauge{position:relative;height:10px;background:#1a2836;border-radius:5px;margin:8px 0;}
+.gauge .gf{height:10px;border-radius:5px;background:var(--good);transition:width .4s;}
+.gauge .gm{position:absolute;top:-3px;width:2px;height:16px;background:var(--gold);}
+.bubble{display:flex;gap:8px;margin-bottom:12px;align-items:flex-start;}
+.bubble .av{width:34px;height:34px;border-radius:50%;background:var(--line);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px;}
+.bubble .tx{background:var(--card);border-radius:2px 12px 12px 12px;padding:11px 13px;font-size:14px;line-height:1.55;max-width:85%;}
+.bubble.me{flex-direction:row-reverse;}
+.bubble.me .tx{background:var(--brand);color:#fff;border-radius:12px 2px 12px 12px;}
+.react{font-size:13px;color:#f0997b;font-style:italic;margin:6px 0 10px 42px;line-height:1.5;}
+.react.good{color:#9fe1cb;}
+.topbtns{display:flex;gap:8px;margin-bottom:14px;}
+.topbtns .tb{flex:1;background:var(--card);border:1px solid var(--line);border-radius:10px;color:var(--sub);padding:9px 4px;font-size:12px;text-align:center;cursor:pointer;}
+.pop{position:fixed;left:50%;transform:translateX(-50%);top:70px;background:var(--brand);color:#fff;padding:8px 18px;border-radius:20px;font-size:14px;font-weight:600;z-index:99;animation:pop 1.2s forwards;}
+@keyframes pop{0%{opacity:0;transform:translateX(-50%) translateY(10px);}15%{opacity:1;transform:translateX(-50%) translateY(0);}80%{opacity:1;}100%{opacity:0;transform:translateX(-50%) translateY(-14px);}}
+.shake{animation:shk .4s;}
+@keyframes shk{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.badge{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px;}
+.badge.off{opacity:.35;}
+.badge .bi{font-size:22px;}
+.badge .bn{font-size:13px;font-weight:600;}
+.badge .bd{font-size:11px;color:var(--dim);}
+input[type=text],select{width:100%;background:var(--card2);border:1px solid var(--line);border-radius:8px;color:var(--txt);padding:11px;font-size:15px;margin:6px 0 12px;}
+.chip{display:inline-block;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:7px 14px;font-size:13px;margin:0 6px 8px 0;cursor:pointer;color:var(--sub);}
+.chip.on{background:var(--brand);border-color:var(--brand);color:#fff;}
+.row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #1a2836;font-size:13px;}
+.tgl{width:46px;height:26px;border-radius:13px;background:var(--line);position:relative;cursor:pointer;flex-shrink:0;}
+.tgl.on{background:var(--good);}
+.tgl:after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .2s;}
+.tgl.on:after{left:23px;}
+.timer{font-size:13px;background:#3a1c10;color:#f0997b;padding:2px 10px;border-radius:10px;}
+footer{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:rgba(13,27,42,.97);border-top:1px solid var(--line);display:flex;z-index:10;}
+footer .fb{flex:1;text-align:center;padding:10px 0 14px;font-size:11px;color:var(--dim);cursor:pointer;}
+footer .fb.on{color:#4da3dd;}
+footer .fb .fi{font-size:18px;display:block;margin-bottom:2px;}
+</style>
+</head>
+<body>
+<div id="wrap">
+<div id="hud"></div>
+<div id="app"></div>
+<footer id="foot"></footer>
+</div>
+<script>
+"use strict";
+/* ================= CONFIG ================= */
+var SYNC_URL = ""; /* 전사 집계 Google Apps Script URL — 운영 가이드 참조. 비워두면 전송 안 함 */
+var PASS = {l1:70, l2:3, l3:70, l4:60, l5:70};
+var LOGO="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAnMAAACQCAMAAABUIR05AAAAllBMVEVMaXH///////////////////////////////////////////////////////////////////////////////////////////////////////////////////8JaKbO4e0JaKYJaKb///+EtNNHjrwYcazx9vrC2uk3hLfh7fRmocjS4++jx94oe7GUvdhWl8Kz0ON1qs2Y5diEAAAAIXRSTlMAmd0z7hEid0S7zGaqQFWAiMAQ8NAwIKBgsOBQcJBAoDASQnt2AAAACXBIWXMAAAsSAAALEgHS3X78AAAYoUlEQVR4nO1d6WLiMA6GQBugF/SeTmd3C6V3p9P3f7klh2RLlmUnodDD36+WJI7jfJElWZJ7vYSEhISEhjg+uD6azU7nBU5ms4uj32fb7lLCN8bx5cXVXMDs6GDbXUv4jji/PpX4VuPk4ve2O5jwzXDwSyEc0C7Nsglrw6U4pQqT7OW2e5rwPRDLuAJXiXUJnXE2i2dcybqk2CV0wvEfkViP9wWePTPs+bZ7nfCFceZMq48v77fLG8Tt2+LeZd3Rtvud8GVxzbh0//56I+D27yM78TSZsAltcHxBJdxCJFyFh7935OSTZEskNMcx8QE/PvkJV2L5RIXdn233P+HLgVAuyLgSlHW/jrf9CAlfC+c25RYxjHNYd5pIl9AAtpR7foil3GqG/ZtIl9AKNuX+xjOuwMNzIl1CC5i1h7soTY6IuhdDutm2HyThq8AsPtw1mFcRT4Z0F9t+lISvgd/dKHdzc2ucdclPlxCB85OOlFspdUi6k7QikRDGrDPlbNKdbvtxEj4/zCLrbWvKrUiHraQF/4QAzMz63oFytiGRQpsSdGDiw79OlLu5Qe9wcpgkqDgApjwuw7TSgc7hlImYoAENiC7KXIWHJOgSIoBi7qUz5W5uFknQJYQBYu6u88y6wvIxCbqEEFDMRUcvqUDbNTmGE3yAaPTuBkQFEHRp2TXBg2OQS42DSTwAQXey7SdL+KyAJYiQNvf2Ugqwu39PgROXsASWEq0TZECkpq7N2QHodwuddeAYTpNrgohzYJKSVHizZDnUj6ojD3x0P2tyHVHsbrs/nxgwtWqrXg80jzWo/IFM/FGWKxugfNv9QeTD+bw/2HYvChxcX8yu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"; /* 통과 기준: l1 정답률%, l2 미션 성공수/4, l3 정확도%, l4 신뢰도%, l5 완성도% */
+/* ================= I18N (UI) ================= */
+var UI = {
+ ko:{appname:"DaolFusion Quest", sub:"AI 세일즈 마스터", start:"시작하기", home:"홈", note:"오답노트", hist:"기록", badge:"배지", set:"설정",
+  lv1:"Level 1. AI 루키", lv2:"Level 2. 다올 퓨전 탐험가", lv3:"Level 3. 다올 퓨전 ISV 커넥터", lv4:"Level 4. 다올 퓨전 세일즈 히어로", lv5:"Level 5. 다올 퓨전 마스터",
+  lv1d:"AI 기본 개념", lv2d:"DaolFusion 제품 이해", lv3d:"ISV 솔루션 매칭", lv4d:"고객 상담 롤플레이", lv5d:"제안 챌린지 (보스전)",
+  locked:"이전 레벨을 클리어하세요", cleared:"클리어", best:"최고", pts:"P", passLbl:"통과", curLbl:"현재",
+  next:"다음", check:"확인", retry:"재도전", toHome:"홈으로", correct:"정답!", wrong:"오답", combo:"콤보", hint:"힌트",
+  learn:"개념 카드 학습", quiz:"퀴즈 시작", sayLbl:"고객에게는 이렇게 말하세요", expLbl:"해설",
+  passOk:"레벨 클리어!", passNo:"통과 기준 미달 — 다시 도전하세요", score:"점수", acc:"정답률",
+  meetSel:"미팅 선택", meetRec:"추천 (담당 산업)", meetAll:"전체 미팅", meetRnd:"랜덤 미팅", trust:"신뢰도",
+  meetPass:"미팅 성공!", meetFail:"고객이 떠났습니다…", meetLow:"신뢰도가 부족합니다", pick4:"★는 추천 미팅입니다. 어떤 미팅이든 4건 성공하면 레벨 통과!",
+  boss:"보스전", bossCase:"고객 브리핑", step:["제품 구성 선택","ISV 조합 선택","핵심 Benefit 선택","클로징 멘트 선택"],
+  cert:"수료증", certSave:"수료증 저장", certDone:"이제 고객에게 DaolFusion을 제안할 수 있습니다",
+  name:"이름", dept:"소속 (선택)", inds:"담당 산업 (1~3개 선택)", share:"학습 결과 전사 공유 동의",
+  shareD:"동의 시 레벨 결과가 회사 집계로 전송됩니다. 언제든 변경 가능. 미동의여도 모든 기능 사용 가능.",
+  save:"저장", lang:"Language", reviewStart:"복습 퀴즈 시작", noteEmpty:"오답이 없습니다. 완벽하네요!",
+  grad:"극복 완료", noteTimes:"회 틀림", reviewBonus:"복습 보너스", histEmpty:"아직 기록이 없습니다",
+  timeLeft:"남은 시간", timeBonus:"시간 보너스", title:["AI 루키","다올 퓨전 탐험가","다올 퓨전 ISV 커넥터","다올 퓨전 세일즈 히어로","다올 퓨전 마스터"],
+  mission:"미션", needName:"이름을 입력하세요", needInd:"담당 산업을 1개 이상 선택하세요",
+  onboardT:"환영합니다!", onboardD:"다올TS AI 영업 여정을 시작합니다. 프로필을 설정해 주세요.",
+  isvRef:"ISV 한눈에 보기", turnNote:"응답을 선택하세요", better:"더 나은 답변", queued:"결과 전송 대기 (다음 접속 시 재시도)",
+  synced:"전사 집계 전송 완료", picked:"선택됨", pickBtn:"이 미팅 선택", unpick:"선택 해제", startMeet:"미팅 시작", needPick:"미팅 4건을 선택하세요", progress:"진행",
+  resumeT:"진행 중이던 학습이 있습니다", resumeGo:"이어하기", resumeNo:"이 레벨 처음부터", exitS:"나가기 · 자동 저장됨",
+  l3learn:"ISV 학습 후 시작 (권장)", l3skip:"바로 퀴즈 시작", lv5go:"👑 Level 5. 도전하기",
+  l4prog1:"성공 미팅", l4prog2:"건 남음", freeT:"✓ 레벨 완료 — 자유 훈련 모드", freeD:"새 미팅 성공 +30P · 성공했던 미팅 재도전 +10P · 8개 산업 모두 성공하면 🌏 배지",
+  resetT:"전체 초기화", resetD:"이 기기의 모든 기록(포인트·진행·오답노트·배지)을 삭제하고 처음부터 시작합니다. 다른 사용자로 시작할 때도 사용하세요.", resetBtn:"전체 초기화 (기록 삭제)", resetC:"정말 모든 기록을 삭제할까요? 되돌릴 수 없습니다.\n(팁: 삭제 전 '코드 내보내기'로 백업할 수 있습니다)",
+  xferT:"기기 이동 (이어하기 코드)", xferD:"다른 PC·스마트폰에서 계속하려면: ① [코드 내보내기]를 눌러 복사 → ② 카톡 '나에게 보내기' 등으로 코드 전달 → ③ 새 기기에서 게임을 열고 설정 > 아래 칸에 붙여넣기 → [코드 가져오기]", xferOut:"코드 내보내기 (복사)", xferIn:"코드 가져오기", xferOk:"가져오기 완료! 이어서 진행하세요", xferBad:"코드가 올바르지 않습니다", xferCopied:"코드가 복사되었습니다", xferPaste:"여기에 코드를 붙여넣으세요", xferWarn:"가져오기를 하면 이 기기의 기존 기록을 덮어씁니다"},
+ en:{appname:"DaolFusion Quest", sub:"AI Sales Master", start:"Start", home:"Home", note:"Review notes", hist:"History", badge:"Badges", set:"Settings",
+  lv1:"Level 1. AI Rookie", lv2:"Level 2. Daol Fusion Explorer", lv3:"Level 3. Daol Fusion ISV Connector", lv4:"Level 4. Daol Fusion Sales Hero", lv5:"Level 5. Daol Fusion Master",
+  lv1d:"AI basics", lv2d:"Understanding DaolFusion", lv3d:"ISV solution matching", lv4d:"Customer role-play", lv5d:"Proposal challenge (boss)",
+  locked:"Clear the previous level first", cleared:"Cleared", best:"Best", pts:"P", passLbl:"Pass", curLbl:"Now",
+  next:"Next", check:"Check", retry:"Retry", toHome:"Home", correct:"Correct!", wrong:"Wrong", combo:"Combo", hint:"Hint",
+  learn:"Concept cards", quiz:"Start quiz", sayLbl:"Say this to your customer", expLbl:"Explanation",
+  passOk:"Level cleared!", passNo:"Below pass line — try again", score:"Score", acc:"Accuracy",
+  meetSel:"Select meetings", meetRec:"Recommended (your industries)", meetAll:"All meetings", meetRnd:"Random meeting", trust:"Trust",
+  meetPass:"Meeting success!", meetFail:"The customer walked away…", meetLow:"Trust too low", pick4:"★ marks recommendations. Clear any 4 meetings to pass!",
+  boss:"Boss", bossCase:"Customer brief", step:["Choose configuration","Choose ISV mix","Choose key benefit","Choose closing line"],
+  cert:"Certificate", certSave:"Save certificate", certDone:"You can now propose DaolFusion to customers",
+  name:"Name", dept:"Team (optional)", inds:"Your industries (pick 1–3)", share:"Share results with company",
+  shareD:"If on, level results are sent to the company dashboard. Changeable anytime. All features work without it.",
+  save:"Save", lang:"Language", reviewStart:"Start review quiz", noteEmpty:"No wrong answers. Perfect!",
+  grad:"Graduated", noteTimes:"misses", reviewBonus:"Review bonus", histEmpty:"No records yet",
+  timeLeft:"Time left", timeBonus:"Time bonus", title:["AI Rookie","Daol Fusion Explorer","Daol Fusion ISV Connector","Daol Fusion Sales Hero","Daol Fusion Master"],
+  mission:"Mission", needName:"Enter your name", needInd:"Pick at least one industry",
+  onboardT:"Welcome!", onboardD:"Your DaolTS AI sales journey begins. Set up your profile.",
+  isvRef:"ISV at a glance", turnNote:"Choose your reply", better:"Better answer", queued:"Result queued (retry next launch)",
+  synced:"Synced to company dashboard", picked:"Picked", pickBtn:"Pick this meeting", unpick:"Unpick", startMeet:"Start meeting", needPick:"Pick 4 meetings", progress:"Progress",
+  resumeT:"You have unfinished progress", resumeGo:"Resume", resumeNo:"Restart this level", exitS:"Exit · progress saved",
+  l3learn:"Learn ISVs first (recommended)", l3skip:"Skip to quiz", lv5go:"👑 Take on Level 5",
+  l4prog1:"Successful meetings", l4prog2:"left", freeT:"✓ Level cleared — free training mode", freeD:"New meeting success +30P · replaying a cleared meeting +10P · clear all 8 industries for the 🌏 badge",
+  resetT:"Reset everything", resetD:"Deletes all records on this device (points, progress, notes, badges) and starts fresh. Also use this to switch users.", resetBtn:"Reset all (delete records)", resetC:"Delete all records? This cannot be undone.\n(Tip: back up with 'Export code' first)",
+  xferT:"Move to another device (transfer code)", xferD:"To continue on another PC or phone: ① tap [Export code] to copy → ② send the code to yourself (chat, email) → ③ open the game on the new device, paste below in Settings → [Import code]", xferOut:"Export code (copy)", xferIn:"Import code", xferOk:"Imported! Continue where you left off", xferBad:"Invalid code", xferCopied:"Code copied", xferPaste:"Paste your code here", xferWarn:"Importing overwrites this device's current records"}
+};
+var INDS = [
+ {id:"ins", ko:"보험", en:"Insurance"},{id:"sec", ko:"증권", en:"Securities"},{id:"fin", ko:"금융(1·2·3금융권)", en:"Finance"},
+ {id:"pub", ko:"공공기관", en:"Public sector"},{id:"lab", ko:"연구소", en:"Research inst."},{id:"uni", ko:"대학", en:"University"},
+ {id:"def", ko:"방산", en:"Defense"},{id:"smb", ko:"SMB", en:"SMB"}];
+/* ===== Level 1. 개념 카드 ===== */
+var L1_CARDS=[
+{id:"c1",ko:{t:"LLM (대규모 언어모델)",a:"수억 권의 책을 읽은 신입사원",d:"사람의 말을 이해하고 문서 작성·요약·질문 답변을 하는 AI. ChatGPT, 그리고 업스테이지 Solar가 대표적인 LLM.",s:"직원분들이 쓰시는 챗GPT 같은 AI를 회사 안에 안전하게 둘 수 있습니다."},en:{t:"LLM (Large Language Model)",a:"A new hire who has read millions of books",d:"AI that understands language and writes, summarizes, and answers. ChatGPT and Upstage Solar are typical LLMs.",s:"You can have a ChatGPT-like AI safely inside your company."}},
+{id:"c2",ko:{t:"RAG (검색 증강 생성)",a:"오픈북 시험을 보는 AI",d:"AI가 회사 문서를 먼저 찾아본 뒤 근거와 함께 답하는 방식. 엉뚱한 답(환각)이 크게 줄어든다.",s:"AI가 우리 회사 규정집을 찾아보고 근거 페이지까지 보여주며 답합니다."},en:{t:"RAG (Retrieval-Augmented Generation)",a:"An AI taking an open-book exam",d:"The AI searches company documents first, then answers with evidence. Greatly reduces hallucination.",s:"The AI looks up your own manuals and answers with the source page."}},
+{id:"c3",ko:{t:"AI Agent (에이전트)",a:"지시하면 스스로 일을 끝내는 디지털 직원",d:"답변만 하는 챗봇을 넘어, 시스템을 조작해 업무를 직접 수행·완결하는 AI. (예: 제논 OneAgent)",s:"'경비 청구해줘'라고 하면 AI가 시스템에 들어가 직접 처리까지 합니다."},en:{t:"AI Agent",a:"A digital employee who finishes the job",d:"Beyond chat: AI that operates systems and completes tasks itself (e.g. GenON OneAgent).",s:"Say 'file my expenses' and the AI goes into the system and does it."}},
+{id:"c4",ko:{t:"온프레미스 (On-Premise)",a:"우리 건물 안의 금고",d:"AI를 회사 내부 서버에 설치해 데이터가 밖으로 한 발짝도 나가지 않는 방식. 금융·공공·방산 규제 산업의 필수 조건.",s:"고객 데이터가 회사 밖으로 절대 나가지 않습니다. 규제 걱정 없이 쓰실 수 있습니다."},en:{t:"On-premise",a:"A vault inside your own building",d:"AI runs on servers inside the company — data never leaves. Essential for regulated industries.",s:"Your data never leaves the building. No compliance worries."}},
+{id:"c5",ko:{t:"GPU",a:"AI의 엔진",d:"수천 개의 계산을 동시에 처리하는 칩. AI 학습·추론의 심장이며, 비싸고 귀해서 '잘 나눠 쓰는 것'이 핵심 이슈.",s:"비싼 GPU가 놀지 않도록 효율적으로 운영하는 게 비용 절감의 핵심입니다."},en:{t:"GPU",a:"The engine of AI",d:"A chip doing thousands of calculations at once. Expensive and scarce — sharing it well is the key issue.",s:"Keeping costly GPUs busy is the key to saving money."}},
+{id:"c6",ko:{t:"NPU",a:"AI 전용 저전력 소형 엔진",d:"AI 추론에 특화된 반도체. DEEPX NPU는 GPU 대비 약 10% 비용으로 GPU급 성능, 에너지 90% 절감.",s:"현장 장비·CCTV에는 GPU 대신 NPU로 비용과 전기료를 확 줄일 수 있습니다."},en:{t:"NPU",a:"A small, low-power AI engine",d:"A chip specialized for AI inference. DEEPX NPU: ~10% of GPU cost, ~90% less energy.",s:"For edge devices and CCTV, NPUs slash cost and power bills."}},
+{id:"c7",ko:{t:"MLOps",a:"AI 모델의 공장 운영 시스템",d:"AI 모델의 개발→배포→모니터링을 자동화·일원화하는 체계. (예: Mondrian Yennefer, TEN AI Pub)",s:"모델을 만들고 끝이 아니라, 공장처럼 계속 안정적으로 돌아가게 관리해 드립니다."},en:{t:"MLOps",a:"A factory system for AI models",d:"Automates develop→deploy→monitor for AI models (e.g. Mondrian Yennefer, TEN AI Pub).",s:"We keep your models running like a well-run factory."}},
+{id:"c8",ko:{t:"파인튜닝 (Fine-tuning)",a:"신입사원 직무교육",d:"범용 AI 모델을 우리 회사 데이터로 추가 학습시켜 우리 업무에 특화시키는 것.",s:"우리 회사 용어와 업무를 아는 '우리 회사 전용 AI'로 만들어 드립니다."},en:{t:"Fine-tuning",a:"Job training for a new hire",d:"Further training a general model on your data to specialize it for your work.",s:"We turn it into an AI that speaks your company's language."}},
+{id:"c9",ko:{t:"Tokenomics (토크노믹스)",a:"AI의 연비 관리",d:"AI가 처리하는 토큰(글자 조각) 단위 비용을 최적화해 측정 가능한 ROI로 연결하는 관점. DaolFusion의 핵심 철학.",s:"AI를 '얼마나 싸게 많이' 쓰는지 토큰 단위로 관리해 투자 대비 효과를 숫자로 보여드립니다."},en:{t:"Tokenomics",a:"Fuel-efficiency management for AI",d:"Optimizing cost per token and linking it to measurable ROI — DaolFusion's core philosophy.",s:"We manage AI cost per token and show ROI in numbers."}},
+{id:"c10",ko:{t:"환각 (Hallucination)",a:"AI의 그럴듯한 거짓말",d:"AI가 사실이 아닌 내용을 자신 있게 답하는 현상. RAG와 근거(출처) 표기로 크게 줄일 수 있다.",s:"근거 문서를 함께 보여주는 방식이라 AI의 거짓 답변 위험을 크게 낮췄습니다."},en:{t:"Hallucination",a:"AI's confident lie",d:"AI confidently stating false things. Greatly reduced by RAG and source citation.",s:"Answers come with source documents, so the risk of false answers drops sharply."}},
+{id:"c11",ko:{t:"PoC (개념 검증)",a:"구매 전 시승",d:"도입 전에 실제 데이터로 성능·효과를 미리 검증하는 것. 다올TS는 AI Factory PoC/Demo Center에서 무상 검증 환경을 제공.",s:"저희 PoC 센터에서 고객 데이터로 무상 검증부터 해보시죠. 결과를 보고 결정하시면 됩니다."},en:{t:"PoC (Proof of Concept)",a:"A test drive before buying",d:"Verifying performance with real data before adoption. DaolTS offers a free AI Factory PoC/Demo Center.",s:"Let's validate with your data at our PoC center, free of charge."}},
+{id:"c12",ko:{t:"GPU 분할 가상화",a:"큰 피자를 조각으로 나누기",d:"GPU 1장을 여러 조각으로 나눠 여러 팀·사용자가 동시에 쓰는 기술. TEN AI Pub은 1장을 최대 100조각까지 분할.",s:"GPU를 더 사지 않아도, 지금 있는 GPU를 나눠 쓰게 해서 대기 없이 모두 쓰게 해드립니다."},en:{t:"GPU partitioning",a:"Slicing a big pizza",d:"Splitting one GPU so many teams use it at once. TEN AI Pub splits one GPU into up to 100 blocks.",s:"No new GPUs needed — we slice what you have so everyone gets a share."}}];
+/* ===== Level 1. 퀴즈 ===== */
+var L1_QUIZ=[
+{id:"q1",ref:"c2",type:"mc",ko:{q:"고객이 'AI가 엉뚱한 답을 할까 걱정'이라고 합니다. 어떤 기술을 설명해야 할까요?",o:["파인튜닝","RAG (검색 증강 생성)","GPU 분할 가상화","NPU"],exp:"환각 걱정에는 RAG. AI가 회사 문서를 찾아보고 근거와 함께 답합니다.",say:"AI가 답을 지어내지 않도록, 회사 문서를 찾아 근거와 함께 답하는 RAG 방식을 적용합니다."},en:{q:"A customer worries the AI may make things up. Which technology do you explain?",o:["Fine-tuning","RAG","GPU partitioning","NPU"],exp:"For hallucination worries: RAG — the AI cites company documents.",say:"We apply RAG so the AI answers with evidence from your own documents."},a:1},
+{id:"q2",ref:"c4",type:"ox",ko:{q:"온프레미스 방식에서는 회사 데이터가 외부 클라우드로 전송된다. (O/X)",exp:"X. 온프레미스는 회사 내부 서버에서 모든 것이 처리되어 데이터가 밖으로 나가지 않습니다. 규제 산업의 필수 조건.",say:"데이터가 회사 밖으로 절대 나가지 않는 온프레미스 방식입니다."},en:{q:"With on-premise, company data is sent to an external cloud. (O/X)",exp:"X. On-premise keeps everything on internal servers — data never leaves.",say:"It's on-premise: your data never leaves the building."},a:1},
+{id:"q3",ref:"c1",type:"mc",ko:{q:"LLM을 고객에게 가장 쉽게 비유하면?",o:["계산기","수억 권을 읽은 신입사원","외장하드","백신 프로그램"],exp:"LLM은 방대한 텍스트를 학습해 사람 말을 이해하고 생성하는 AI — '많이 읽은 신입사원' 비유가 효과적.",say:"수억 권을 읽은 똑똑한 신입사원을 회사에 들이는 것과 같습니다."},en:{q:"Best analogy for an LLM?",o:["A calculator","A new hire who read millions of books","An external drive","Antivirus software"],exp:"An LLM learns from vast text — the 'well-read new hire' analogy works.",say:"It's like hiring a brilliant assistant who has read millions of books."},a:1},
+{id:"q4",ref:"c3",type:"mc",ko:{q:"챗봇과 AI Agent의 가장 큰 차이는?",o:["답변 속도","화면 디자인","답변을 넘어 업무를 직접 실행·완결한다","가격"],exp:"Agent는 시스템을 조작해 일을 직접 끝냅니다. '조언자'가 아니라 '대행자'.",say:"정보만 주는 게 아니라, AI가 시스템에 들어가 업무를 직접 끝냅니다."},en:{q:"Key difference between a chatbot and an AI agent?",o:["Speed","Design","It executes and completes tasks, not just answers","Price"],exp:"An agent operates systems and finishes the job — a doer, not an advisor.",say:"It doesn't just answer — it goes in and completes the task."},a:2},
+{id:"q5",ref:"c6",type:"ox",ko:{q:"DEEPX NPU는 GPU 대비 약 10% 비용으로 GPU급 추론 성능을 낸다. (O/X)",exp:"O. NPU는 AI 추론 특화 칩으로 비용 ~10%, 에너지 ~90% 절감이 셀링 포인트.",say:"현장 장비에는 NPU로 GPU급 성능을 10분의 1 비용에 구현할 수 있습니다."},en:{q:"DEEPX NPU delivers GPU-class inference at ~10% of the cost. (O/X)",exp:"O. NPUs are inference-specialized: ~10% cost, ~90% less energy.",say:"For edge gear, NPUs give GPU-class results at a tenth of the cost."},a:0},
+{id:"q6",ref:"c9",type:"mc",ko:{q:"DaolFusion이 강조하는 'Tokenomics'의 의미는?",o:["암호화폐 투자","토큰 단위 비용 최적화로 측정 가능한 AI ROI 실현","보안 토큰 인증","토큰 게임 아이템"],exp:"토큰당 비용과 도입 시간을 줄여 측정 가능한 비즈니스 성과(ROI)로 잇는 것이 DaolFusion의 핵심 철학.",say:"AI 비용을 토큰 단위로 관리해 투자 효과를 숫자로 증명해 드립니다."},en:{q:"What does DaolFusion's 'Tokenomics' mean?",o:["Crypto investing","Optimizing cost per token for measurable AI ROI","Security tokens","Game items"],exp:"Cutting cost-per-token and time-to-value into measurable ROI — DaolFusion's philosophy.",say:"We manage AI cost per token and prove ROI in numbers."},a:1},
+{id:"q7",ref:"c12",type:"mc",ko:{q:"'개발팀마다 GPU를 달라는데 장비가 부족해요'라는 고객에게 맞는 답은?",o:["GPU를 더 구매하세요","클라우드로 이전하세요","GPU 분할 가상화로 지금 장비를 나눠 쓰게 하죠","AI 도입을 미루세요"],exp:"GPU 분할 가상화(AI Pub 등)로 1장을 여러 팀이 나눠 쓰면 추가 구매 없이 해결.",say:"GPU를 더 사기 전에, 지금 GPU를 조각내 나눠 쓰는 것부터 해보시죠."},en:{q:"Customer: 'Every team wants GPUs but we don't have enough.' Best reply?",o:["Buy more GPUs","Move to cloud","Partition your current GPUs so teams share them","Postpone AI"],exp:"GPU partitioning (e.g. AI Pub) solves it without new purchases.",say:"Before buying more, let's slice your current GPUs so everyone shares."},a:2},
+{id:"q8",ref:"c8",type:"ox",ko:{q:"파인튜닝은 AI 모델을 우리 회사 데이터로 추가 학습시켜 특화시키는 것이다. (O/X)",exp:"O. 신입사원 직무교육처럼, 범용 모델을 우리 업무에 맞게 다듬는 과정.",say:"우리 회사 용어를 아는 전용 AI로 만드는 과정이 파인튜닝입니다."},en:{q:"Fine-tuning means further training a model on your data to specialize it. (O/X)",exp:"O. Like job training for a new hire.",say:"Fine-tuning makes it an AI that knows your business."},a:0},
+{id:"q9",ref:"c11",type:"mc",ko:{q:"도입을 망설이는 고객에게 다올TS가 제시할 수 있는 가장 강력한 카드는?",o:["할인 쿠폰","AI Factory PoC/Demo Center 무상 검증","무조건 계약","경쟁사 비방"],exp:"다올TS는 PoC 센터에서 고객 데이터로 무상 사전 검증을 제공 — 리스크 없이 결과를 보고 결정하게 합니다.",say:"저희 PoC 센터에서 무상으로 먼저 검증해 보시고 결정하시죠."},en:{q:"Strongest card for a hesitant customer?",o:["A discount coupon","Free validation at the AI Factory PoC/Demo Center","Push the contract","Bashing competitors"],exp:"DaolTS offers free pre-validation with the customer's data at the PoC center.",say:"Validate first at our PoC center, free — then decide."},a:1},
+{id:"q10",ref:"c7",type:"mc",ko:{q:"MLOps가 해결하는 문제는?",o:["모델을 만들고 방치되는 문제 — 개발·배포·모니터링을 일원화","사무실 네트워크 속도","프린터 관리","메일 스팸 차단"],exp:"모델은 만드는 것보다 '계속 잘 돌게 하는 것'이 어렵습니다. MLOps가 그 공장 운영 시스템.",say:"모델을 만들고 끝이 아니라, 계속 안정적으로 돌아가게 관리하는 체계까지 제공합니다."},en:{q:"What problem does MLOps solve?",o:["Models being abandoned after build — unifying dev, deploy, monitoring","Office network speed","Printer management","Spam filtering"],exp:"Keeping models running well is the hard part — MLOps is that factory system.",say:"We provide the system that keeps models running reliably."},a:0},
+{id:"q11",ref:"c10",type:"ox",ko:{q:"환각(Hallucination)은 RAG와 출처 표기로 크게 줄일 수 있다. (O/X)",exp:"O. 근거 문서를 찾아 답하게 하고 출처를 표시하면 거짓 답변 위험이 크게 감소.",say:"근거 문서와 출처를 함께 보여드리는 방식이라 안심하고 쓰실 수 있습니다."},en:{q:"Hallucination can be greatly reduced with RAG and source citation. (O/X)",exp:"O. Grounding answers in documents with cited sources cuts the risk sharply.",say:"Answers come with cited sources, so you can trust them."},a:0},
+{id:"q12",ref:"c5",type:"mc",ko:{q:"'GPU가 부족한데, 노는 시간도 많다'는 고객의 진짜 니즈는?",o:["더 예쁜 대시보드","GPU 자원 효율화·운영 자동화","사무용 PC 교체","홈페이지 개편"],exp:"확산기 고객의 전형적 Pain Point — 자원 효율화(분할·스케줄링·모니터링)가 답. DaolFusion+AI Pub/MonBox의 영역.",say:"GPU가 놀지 않게 배분·회수를 자동화하면 지금 장비로도 훨씬 많은 일을 할 수 있습니다."},en:{q:"'We lack GPUs, yet they often sit idle' — the real need?",o:["Prettier dashboards","GPU efficiency and automated operations","New office PCs","Website redesign"],exp:"A classic scaling-stage pain point — partitioning, scheduling, monitoring.",say:"Automate allocation so GPUs never sit idle — your current gear can do much more."},a:1}];
+/* ===== Level 2. 제품 카드 ===== */
+var L2_CARDS=[
+{id:"p1",ko:{t:"DaolFusion = All-in-One AI 플랫폼",a:"전원만 켜면 되는 Turn-key AI",d:"Dell 하드웨어 + 다올TS 최적화 기술 + 검증된 ISV 솔루션의 '삼위일체'. 인프라부터 애플리케이션까지 통합해 AI 도입의 복잡함을 없앤다.",s:"글로벌 1위 Dell이 검증하고 다올TS가 최적화한 일체형이라, 따로따로 조합하는 것보다 훨씬 안정적입니다."},en:{t:"DaolFusion = All-in-One AI platform",a:"Turn-key AI — just power it on",d:"The trinity of Dell hardware + DaolTS optimization + proven ISV solutions, integrated from infra to apps.",s:"Verified by Dell, optimized by DaolTS — far more stable than piecing parts together."}},
+{id:"p2",ko:{t:"Starter / Pro / Max 구성",a:"필요한 만큼 고르는 3단 구성",d:"Starter(AI Factory + ISV) → Pro(+ Security 보안) → Max(+ Cloud + Data 관리). 구축 목적과 범위에 따라 즉시 선택.",s:"처음엔 Starter로 시작하고, 보안·데이터 요건이 커지면 Pro, Max로 확장하시면 됩니다."},en:{t:"Starter / Pro / Max tiers",a:"Three tiers — pick what you need",d:"Starter (AI Factory + ISV) → Pro (+ Security) → Max (+ Cloud + Data). Choose by purpose and scope.",s:"Start with Starter, grow into Pro or Max as security and data needs expand."}},
+{id:"p3",ko:{t:"핑퐁 금지 & One-call Support",a:"전화 한 통이면 끝",d:"HW는 Dell에, SW는 개발사에 각자 전화하라고 하면 고객은 도망간다. 다올TS가 플랫폼 위에서 ISV까지 통합 관제하고 이슈를 1차 대응한다.",s:"문제가 생기면 저희에게만 전화하시면 됩니다. 하드웨어든 솔루션이든 저희가 1차 대응하고 원인을 분석해 드립니다."},en:{t:"No ping-pong & one-call support",a:"One phone call solves it",d:"Telling customers to call Dell for HW and vendors for SW drives them away. DaolTS monitors the whole stack and responds first.",s:"One call to us covers everything — hardware or software, we respond first."}},
+{id:"p4",ko:{t:"AI Factory PoC/Demo Center",a:"무상 시승 코스",d:"도입 전 고객 데이터로 성능·효과를 무상 검증하는 사전 검증 환경. 리스크 없이 결과를 보고 결정하게 하는 다올TS의 무기.",s:"계약 전에 PoC 센터에서 고객 데이터로 무상 검증부터 해보시죠."},en:{t:"AI Factory PoC/Demo Center",a:"A free test-drive course",d:"Free pre-validation with the customer's data before adoption — decide on results, not promises.",s:"Before any contract, validate free at our PoC center with your data."}}];
+/* ===== Level 2. 조립 미션 (구성 선택) ===== */
+var L2_MISSIONS=[
+{id:"m1",ko:{q:"[미션] 대학 연구팀: 'AI를 처음 도입합니다. 경제적으로 빠르게 개발 환경과 ISV 솔루션이 필요해요.'",exp:"AI Factory + ISV 기본 구성이면 충분 — Starter. 요구가 커지면 확장하면 됩니다.",say:"Starter로 바로 시작하고, 필요해지면 Pro·Max로 확장하시면 됩니다."},en:{q:"[Mission] University lab: 'First AI adoption. We need an affordable dev environment with ISV solutions, fast.'",exp:"AI Factory + ISV basics suffice — Starter.",say:"Start with Starter; expand to Pro or Max when needs grow."},a:0},
+{id:"m2",ko:{q:"[미션] 보험사: '온프레미스 LLM에 더해 보안 규제 대응이 반드시 포함돼야 합니다.'",exp:"Security가 포함된 Pro 구성. 금융 규제 산업의 표준 답안.",say:"보안이 포함된 Pro 구성으로 규제 요건까지 한 번에 해결됩니다."},en:{q:"[Mission] Insurer: 'On-prem LLM plus mandatory security compliance.'",exp:"Pro includes Security — the standard answer for regulated finance.",say:"Pro includes security, covering compliance in one package."},a:1},
+{id:"m3",ko:{q:"[미션] 대형 금융그룹: '전사 확산 단계입니다. 클라우드 연계와 데이터 관리까지 통합 운영하고 싶어요.'",exp:"Cloud + Data까지 포함하는 Max 구성.",say:"전사 확산 단계라면 Cloud·Data까지 통합된 Max가 맞습니다."},en:{q:"[Mission] Large financial group: 'Enterprise-wide rollout — we want cloud integration and data management too.'",exp:"Max includes Cloud + Data.",say:"For enterprise rollout, Max with Cloud and Data is the fit."},a:2},
+{id:"m4",ko:{q:"[미션] 스타트업(SMB): '예산이 적습니다. 켜면 바로 쓰는 AI 개발 환경이 목표예요.'",exp:"경제적·즉시 사용이 핵심 — Starter. (MonBox류 워크스테이션도 좋은 조합)",say:"Starter면 전원 켜는 날부터 개발을 시작할 수 있습니다."},en:{q:"[Mission] Startup (SMB): 'Small budget. We want an AI dev environment that works out of the box.'",exp:"Affordable and instant — Starter (a MonBox-class workstation pairs well).",say:"With Starter you develop from day one."},a:0}];
+var L2_TIERS={ko:["Starter (AI Factory + ISV)","Pro (+ Security)","Max (+ Cloud + Data)"],en:["Starter (AI Factory + ISV)","Pro (+ Security)","Max (+ Cloud + Data)"]};
+/* ===== Level 2. 지식 퀴즈 ===== */
+var L2_QUIZ=[
+{id:"k1",type:"mc",ko:{q:"DaolFusion '삼위일체'의 구성은?",o:["Dell + 다올TS + ISV","AWS + Azure + GCP","CPU + RAM + SSD","영업 + 마케팅 + 재무"],exp:"검증된 Dell 하드웨어, 다올TS 최적화·통합 기술, ISV 솔루션의 결합이 경쟁 무기.",say:"글로벌 1위 하드웨어와 검증된 솔루션을 다올TS가 하나로 최적화했습니다."},en:{q:"What makes up the DaolFusion 'trinity'?",o:["Dell + DaolTS + ISV","AWS + Azure + GCP","CPU + RAM + SSD","Sales + marketing + finance"],exp:"Dell hardware, DaolTS optimization, ISV solutions — combined.",say:"World-class hardware and proven solutions, optimized as one by DaolTS."},a:0},
+{id:"k2",type:"mc",ko:{q:"고객이 'ISV 스타트업이라 불안하다'고 할 때 최고의 답변은?",o:["저도 불안합니다","글로벌 1위 Dell이 검증하고 다올TS가 최적화한 All-in-One이라 단독 도입보다 훨씬 안정적입니다","보증금을 걸겠습니다","다른 회사 알아보세요"],exp:"Dell 서버의 역할을 '신뢰'로 포지셔닝 — Sales Kit의 핵심 화법.",say:"Dell이 검증하고 다올TS가 통합 지원하니 안심하셔도 됩니다."},en:{q:"Customer: 'The ISV is a startup — I'm nervous.' Best reply?",o:["Me too","It's an all-in-one verified by Dell and optimized by DaolTS — far more stable than standalone","I'll post a deposit","Try another vendor"],exp:"Position Dell as the trust anchor — a core Sales Kit line.",say:"Verified by Dell, integrated and supported by DaolTS."},a:1},
+{id:"k3",type:"mc",ko:{q:"경쟁사 SI 제안(서버 구매+개발 6개월)과 싸울 때 DaolFusion의 무기는?",o:["더 긴 개발 기간","검증된 ISV 탑재 일체형이라 설치 후 즉시 사용 (Time-to-Value)","더 많은 회의","더 두꺼운 제안서"],exp:"'SI로 6개월 vs 저희는 설치 후 즉시 사용' — Time-to-Value가 킬러 멘트.",say:"SI로 6개월 걸릴 일을, 저희는 설치 후 바로 시작합니다."},en:{q:"Against an SI bid (buy servers + 6-month build), DaolFusion's weapon is?",o:["Longer development","Pre-integrated ISV appliance — instant use after install (time-to-value)","More meetings","A thicker proposal"],exp:"'6 months of SI vs. instant use' — the killer time-to-value line.",say:"What takes SI six months, we start the day it's installed."},a:1},
+{id:"k4",type:"ox",ko:{q:"장애 시 '하드웨어는 Dell에, 소프트웨어는 개발사에 전화하세요'라고 안내하는 것이 올바른 응대다. (O/X)",exp:"X. 핑퐁 금지! 다올TS가 통합 관제하며 1차 대응·원인 분석까지 해준다는 것이 핵심 가치.",say:"문제가 생기면 저희에게만 연락 주시면 끝까지 책임지고 대응합니다."},en:{q:"On failure, telling customers 'call Dell for HW, the vendor for SW' is correct. (O/X)",exp:"X. No ping-pong! DaolTS monitors the stack and responds first.",say:"One call to us — we own the issue end to end."},a:1}];
+/* ===== ISV 목록 (참고 화면용) ===== */
+var ISVS=[
+{n:"Upstage (업스테이지)",ko:"Solar LLM(한국어 특화)·Document Parse(문서 인식 95%+)·AI OCR. 총판 파트너십. 금융·법무·대기업 문서 업무의 강자.",en:"Solar LLM (Korean-focused), Document Parse (95%+ accuracy), AI OCR. Distribution partner. Strong in finance/legal document work."},
+{n:"AgileSoDA (애자일소다)",ko:"ChatSAM(업무특화 RAG)·ETL with VLM(비정형 문서 전처리)·AI Agent 구축. 금융·공공·제조 200+ 프로젝트, Gartner Cool Vendor.",en:"ChatSAM (task-specific RAG), ETL with VLM (unstructured doc processing), AI agents. 200+ projects, Gartner Cool Vendor."},
+{n:"GenON (제논)",ko:"GenOS(기업용 통합 AI 플랫폼)·OneAgent(화면을 직접 조작해 업무를 완결하는 액셔너블 AI). 금융과 중부발전 등 공공·발전 공기업 사례 다수.",en:"GenOS (enterprise AI platform), OneAgent (actionable AI that operates screens and completes tasks). Many references in finance and the public sector incl. KOMIPO."},
+{n:"LG AI연구원",ko:"EXAONE — 국산 최고 수준 파운데이션 모델. 소버린 AI·공공·규제 환경의 온프레미스 LLM 카드.",en:"EXAONE — Korea's top foundation model. The sovereign-AI card for public and regulated sectors."},
+{n:"Mondrian AI (몬드리안)",ko:"MonBox(켜면 바로 쓰는 올인원 AI 워크스테이션)·Yennefer(MLOps 플랫폼)·AI Cluster. 지자체·공공·연구소·대학에 강점.",en:"MonBox (all-in-one AI workstation), Yennefer (MLOps platform), AI Cluster. Strong in public sector, labs, universities."},
+{n:"TEN (텐)",ko:"AI Pub — GPU 1장을 최대 100분할하는 워크로드 오케스트레이션. RBAC 권한관리, FinOps·Billing. NVIDIA 공식 파트너.",en:"AI Pub — GPU orchestration splitting one GPU into up to 100 blocks. RBAC, FinOps/billing. NVIDIA partner."},
+{n:"IDEATEC (이데아텍)",ko:"AX iPaaS — AI Agent와 기업 시스템·API를 노코드로 연결·자동화하는 통합 플랫폼 (API/AI Gateway).",en:"AX iPaaS — no-code integration connecting AI agents with enterprise systems and APIs (API/AI gateway)."},
+{n:"DEEPX (딥엑스)",ko:"온디바이스 AI NPU — GPU 대비 10% 비용·90% 에너지 절감. CCTV·로봇·스마트기기 등 엣지 환경.",en:"On-device AI NPU — 10% of GPU cost, 90% energy savings. Edge: CCTV, robots, smart devices."},
+{n:"Nota AI (노타)",ko:"NVA(Nota Vision Agent) — VLM 기반 지능형 영상관제. 산업안전·ITS·선별관제·스마트빌딩. AI 경량화 글로벌 리더.",en:"NVA (Nota Vision Agent) — VLM-based intelligent video monitoring. Industrial safety, ITS, smart buildings."}];
+/* ===== Level 3. 매칭 (문제 → 정답 ISV, 25초 타임어택) ===== */
+var L3_ITEMS=[
+{id:"s1",ind:"ins",ko:{q:"보험사: '스캔된 청구 서류에서 표·체크박스·손글씨까지 데이터로 뽑아내고 싶어요.'",o:["TEN · AI Pub","Upstage · Document Parse","DEEPX · NPU","Mondrian · MonBox"],exp:"문서 인식·구조화 추출은 Upstage Document Parse — 별도 설정 없이 업로드만으로 95%+ 정확도.",say:"업로드만 하면 손글씨까지 구조화 데이터로 추출됩니다. 보험 청구 심사가 바로 빨라집니다."},en:{q:"Insurer: 'Extract tables, checkboxes, even handwriting from scanned claim forms.'",o:["TEN · AI Pub","Upstage · Document Parse","DEEPX · NPU","Mondrian · MonBox"],exp:"Document parsing and structured extraction = Upstage Document Parse.",say:"Just upload — even handwriting becomes structured data. Claims get faster immediately."},a:1},
+{id:"s2",ind:"fin",ko:{q:"은행: '보안 지키면서 한국어 잘하는 사내 LLM 챗봇을 만들고 싶습니다.'",o:["Upstage · Solar LLM (온프레미스)","DEEPX · NPU","Nota · NVA","이데아텍 · iPaaS"],exp:"한국어 특화 Solar LLM을 온프레미스로 — 규제 산업 사내 챗봇의 정석.",say:"한국어 특화 모델을 행내에 설치해 데이터 유출 걱정 없이 쓰실 수 있습니다."},en:{q:"Bank: 'An internal Korean-fluent LLM chatbot, without breaking security.'",o:["Upstage · Solar LLM (on-prem)","DEEPX · NPU","Nota · NVA","IDEATEC · iPaaS"],exp:"Korean-focused Solar LLM on-premise — the standard for regulated internal chatbots.",say:"A Korean-specialized model installed inside the bank — zero data leaves."},a:0},
+{id:"s3",ind:"fin",ko:{q:"카드사 심사팀: '심사 문서를 근거로 정확히 답하는 업무특화 AI가 필요해요.'",o:["AgileSoDA · ChatSAM","TEN · AI Pub","DEEPX · NPU","Nota · NVA"],exp:"업무특화 RAG = ChatSAM. 금융 심사처럼 문서 근거가 중요한 업무에 최적.",say:"심사 규정·문서를 근거로 답하는 업무 전용 RAG를 구축해 드립니다."},en:{q:"Card issuer underwriting team: 'We need a task-specific AI that answers from our documents.'",o:["AgileSoDA · ChatSAM","TEN · AI Pub","DEEPX · NPU","Nota · NVA"],exp:"Task-specific RAG = ChatSAM.",say:"A dedicated RAG grounded in your underwriting documents."},a:0},
+{id:"s4",ind:"def",ko:{q:"방산기업: '도면·보고서 등 비정형 문서 산더미를 AI 학습용으로 전처리해야 합니다.'",o:["Nota · NVA","AgileSoDA · ETL with VLM","TEN · AI Pub","LG · EXAONE"],exp:"비정형 데이터 전처리·추출은 ETL with VLM — VLM 기반 정교한 문서 전처리 솔루션.",say:"쌓여있는 비정형 문서를 AI가 쓸 수 있는 데이터로 바꿔드리는 것부터 시작하시죠."},en:{q:"Defense firm: 'Mountains of unstructured drawings and reports need preprocessing for AI.'",o:["Nota · NVA","AgileSoDA · ETL with VLM","TEN · AI Pub","LG · EXAONE"],exp:"Unstructured preprocessing = ETL with VLM.",say:"First, we turn your document piles into AI-ready data."},a:1},
+{id:"s5",ind:"pub",ko:{q:"공공기관: '국산 모델로 소버린 AI 요건을 충족하면서, 민원·공문 업무에 쓸 LLM이 필요합니다.'",o:["Upstage · Solar LLM (국산·온프레미스)","이데아텍 · iPaaS","TEN · AI Pub","Nota · NVA"],exp:"국산 Solar LLM을 온프레미스로 — 소버린 요건과 민원·공문 업무를 동시에 충족. 다올TS가 총판이라 공급·지원도 직접 책임.",say:"글로벌에서 성능이 입증된 국산 Solar 모델이라 소버린 요건에 맞고, 데이터도 기관 밖으로 나가지 않습니다."},en:{q:"Public agency: 'We need an LLM for civil-service documents that meets sovereign-AI rules with a Korean model.'",o:["Upstage · Solar LLM (Korean, on-prem)","IDEATEC · iPaaS","TEN · AI Pub","Nota · NVA"],exp:"Korean Solar LLM on-premise — sovereign compliance plus document work. DaolTS is the distributor, so supply and support are direct.",say:"A globally proven Korean model — sovereign-compliant, and data never leaves your agency."},a:0},
+{id:"s6",ind:"lab",ko:{q:"연구소: '라이브러리 세팅 없이 켜면 바로 쓰는 AI 개발 장비가 필요해요.'",o:["Mondrian · MonBox","Nota · NVA","Upstage · Document Parse","이데아텍 · iPaaS"],exp:"올인원 AI 워크스테이션 MonBox — 전원 켜는 순간 개발 환경 완성.",say:"드라이버·라이브러리 세팅 없이, 켜는 날부터 연구를 시작하실 수 있습니다."},en:{q:"Research lab: 'AI dev hardware that works the moment we power it on — no setup.'",o:["Mondrian · MonBox","Nota · NVA","Upstage · Document Parse","IDEATEC · iPaaS"],exp:"All-in-one AI workstation MonBox.",say:"No drivers, no setup — research starts the day it arrives."},a:0},
+{id:"s7",ind:"uni",ko:{q:"대학: 'GPU 서버 몇 대를 수백 명 학생·연구팀이 나눠 써야 합니다.'",o:["TEN · AI Pub (GPU 분할)","DEEPX · NPU","Upstage · Solar LLM","Nota · NVA"],exp:"GPU 1장을 최대 100분할하는 AI Pub — 학내 공유 GPU 팜의 정답.",say:"GPU 추가 구매 없이, 지금 장비를 나눠 전교생이 쓰게 할 수 있습니다."},en:{q:"University: 'A few GPU servers must serve hundreds of students and teams.'",o:["TEN · AI Pub (GPU partitioning)","DEEPX · NPU","Upstage · Solar LLM","Nota · NVA"],exp:"AI Pub splits one GPU into up to 100 blocks.",say:"No new GPUs — slice what you have so the whole campus shares."},a:0},
+{id:"s8",ind:"smb",ko:{q:"중견기업: 'AI 에이전트를 ERP·그룹웨어 등 사내 시스템과 노코드로 연결하고 싶어요.'",o:["이데아텍 · AX iPaaS","DEEPX · NPU","Mondrian · MonBox","LG · EXAONE"],exp:"AI와 시스템·API의 연결·자동화는 AX iPaaS — API/AI Gateway로 통합.",say:"AI가 ERP·그룹웨어와 바로 연결되어 실제 업무가 자동화됩니다."},en:{q:"Mid-size firm: 'Connect AI agents to our ERP and groupware without coding.'",o:["IDEATEC · AX iPaaS","DEEPX · NPU","Mondrian · MonBox","LG · EXAONE"],exp:"Connecting AI with systems/APIs = AX iPaaS.",say:"AI plugs straight into your ERP and groupware — real work gets automated."},a:0},
+{id:"s9",ind:"pub",ko:{q:"지자체: '수천 대 CCTV에 AI를 넣고 싶은데 GPU 서버 비용·전기료가 감당이 안 됩니다.'",o:["DEEPX · NPU","TEN · AI Pub","AgileSoDA · ChatSAM","Upstage · Solar LLM"],exp:"엣지 온디바이스 AI엔 NPU — GPU 대비 10% 비용, 90% 에너지 절감.",say:"카메라단에서 NPU로 처리하면 서버 비용과 전기료가 10분의 1 수준이 됩니다."},en:{q:"City gov: 'AI on thousands of CCTVs, but GPU servers and power costs are impossible.'",o:["DEEPX · NPU","TEN · AI Pub","AgileSoDA · ChatSAM","Upstage · Solar LLM"],exp:"Edge on-device AI = NPU: 10% cost, 90% less energy.",say:"Process at the camera with NPUs — a tenth of the cost and power."},a:0},
+{id:"s10",ind:"def",ko:{q:"제조·방산 공장: '작업장 CCTV로 안전모 미착용·위험 상황을 실시간 감지하고 싶어요.'",o:["Nota · NVA (Vision Agent)","이데아텍 · iPaaS","Upstage · Document Parse","Mondrian · Yennefer"],exp:"VLM 기반 지능형 영상관제 NVA — 산업안전·선별관제에 검증된 솔루션.",say:"기존 CCTV에 AI 눈을 달아 위험 상황을 실시간으로 잡아냅니다."},en:{q:"Factory: 'Detect missing helmets and hazards in real time from workplace CCTV.'",o:["Nota · NVA (Vision Agent)","IDEATEC · iPaaS","Upstage · Document Parse","Mondrian · Yennefer"],exp:"VLM-based video monitoring NVA — proven in industrial safety.",say:"We give your CCTV AI eyes that catch hazards in real time."},a:0},
+{id:"s11",ind:"sec",ko:{q:"증권사: '직원이 매일 반복하는 화면 업무(조회→입력→보고)를 AI가 대신 끝내게 하고 싶습니다.'",o:["제논 · OneAgent","DEEPX · NPU","TEN · AI Pub","LG · EXAONE"],exp:"화면을 직접 조작해 업무를 완결하는 액셔너블 AI = OneAgent.",say:"AI가 시스템 화면을 직접 조작해 조회부터 보고까지 끝냅니다."},en:{q:"Securities firm: 'Let AI finish the daily screen work — look up, enter, report.'",o:["GenON · OneAgent","DEEPX · NPU","TEN · AI Pub","LG · EXAONE"],exp:"Actionable AI that operates screens = OneAgent.",say:"The AI drives the screens itself — from lookup to report."},a:0},
+{id:"s12",ind:"lab",ko:{q:"연구소: '모델 개발은 되는데 데이터 파이프라인·배포·모니터링이 제각각이라 관리가 안 됩니다.'",o:["Mondrian · Yennefer (MLOps)","Upstage · Document Parse","DEEPX · NPU","Nota · NVA"],exp:"파이프라인·학습·배포·모니터링 일원화 = MLOps 플랫폼 Yennefer.",say:"개발부터 배포·모니터링까지 한 플랫폼에서 관리되게 만들어 드립니다."},en:{q:"Lab: 'We build models, but pipelines, deployment, and monitoring are all over the place.'",o:["Mondrian · Yennefer (MLOps)","Upstage · Document Parse","DEEPX · NPU","Nota · NVA"],exp:"Unifying pipeline→deploy→monitor = Yennefer MLOps.",say:"One platform manages everything from build to monitoring."},a:0},
+{id:"s13",ind:"pub",ko:{q:"발전 공기업: '직원들이 매일 사내 시스템에서 반복하는 화면 업무(조회→입력→보고)를 AI가 직접 수행해 줬으면 합니다.'",o:["제논 · OneAgent","DEEPX · NPU","이데아텍 · iPaaS","Nota · NVA"],exp:"화면을 직접 조작해 업무를 완결하는 액셔너블 AI = 제논 OneAgent. 중부발전 등 발전 공기업 구축 사례가 강점.",say:"동종 발전 공기업(중부발전) 사례가 있습니다. AI가 시스템 화면을 직접 조작해 조회부터 보고까지 끝냅니다."},en:{q:"Public power utility: 'We want AI to perform the repetitive screen work in our systems — look up, enter, report.'",o:["GenON · OneAgent","DEEPX · NPU","IDEATEC · iPaaS","Nota · NVA"],exp:"Actionable AI that operates screens = GenON OneAgent, with public-utility references incl. KOMIPO.",say:"We have a peer utility reference (KOMIPO). The AI drives the screens itself."},a:0}];
+/* ===== Level 4. 롤플레이 미팅 12종 =====
+ turns[].ch[]: k/e=대사, d=신뢰도 변화, rk/re=고객 반응 */
+var ROLES={cio:{ko:"CIO",en:"CIO"},ops:{ko:"전산실장",en:"IT ops manager"},lob:{ko:"LoB Manager",en:"LoB manager"},caio:{ko:"CAIO",en:"CAIO"},ai:{ko:"AI 담당자",en:"AI lead"}};
+var L4_MEETINGS=[
+{id:"M1",ind:"ins",role:"cio",tk:"보험사 CIO — 보안이 최우선",te:"Insurer CIO — security first",
+ turns:[
+ {ck:"생성형 AI는 쓰고 싶은데, 고객 개인정보가 밖으로 나가는 건 절대 안 됩니다.",ce:"We want generative AI, but customer data must never leave.",
+  ch:[{k:"GPU 스펙이 최신이라 성능이 아주 좋습니다.",e:"Our GPUs are top-spec and very fast.",d:-20,rk:"…성능 얘기가 아니라 보안 얘기를 하고 있는데요.",re:"…I asked about security, not speed."},
+      {k:"온프레미스 LLM이라 데이터가 사내를 벗어나지 않습니다. 금융 규제 요건에 맞춘 구성입니다.",e:"It's an on-prem LLM — data never leaves. Built for financial compliance.",d:18,rk:"그게 바로 저희가 원하던 조건입니다.",re:"That's exactly the condition we need.",b:1},
+      {k:"요즘은 다들 클라우드 쓰니 너무 걱정 안 하셔도 됩니다.",e:"Everyone uses cloud these days — don't worry too much.",d:-20,rk:"걱정하지 말라니요. 우리는 규제 산업입니다.",re:"Don't worry? We're a regulated industry."}]},
+ {ck:"AI OCR로 보험 청구 서류 처리를 자동화하고 싶은데, 정확도가 걱정입니다.",ce:"We want AI OCR for claims, but accuracy worries me.",
+  ch:[{k:"Upstage Document Parse는 표·손글씨까지 95% 이상 정확도로 추출합니다. PoC 센터에서 실제 청구 서류로 무상 검증해 보시죠.",e:"Upstage Document Parse hits 95%+ even on handwriting. Validate free at our PoC center with real claim forms.",d:18,rk:"우리 서류로 직접 검증할 수 있다니 좋네요.",re:"Testing with our own forms — I like that.",b:1},
+      {k:"정확도는 써보시기 전엔 알 수 없습니다.",e:"You can't know accuracy until you try.",d:-5,rk:"그럼 검증 방법이라도 제시해 주셔야죠.",re:"Then at least propose how to verify."},
+      {k:"OCR은 어느 회사 제품이든 비슷합니다.",e:"All OCR products are about the same.",d:-20,rk:"그렇게 말하는 영업은 처음 보네요…",re:"First salesperson to say that…"}]},
+ {ck:"장애가 나면 하드웨어 업체, 솔루션 업체에 각각 연락해야 하는 건 아니죠?",ce:"If something fails, do we call the HW vendor and the SW vendor separately?",
+  ch:[{k:"아닙니다. 다올TS가 플랫폼 전체를 통합 관제하고 1차 대응부터 원인 분석까지 저희가 책임집니다.",e:"No — DaolTS monitors the whole stack. One call to us covers response and root-cause analysis.",d:18,rk:"단일 창구라면 운영 부담이 확 줄겠군요.",re:"A single window would really cut our burden.",b:1},
+      {k:"하드웨어는 Dell, 소프트웨어는 ISV에 연락하시면 됩니다.",e:"Call Dell for HW, the ISV for SW.",d:-20,rk:"그 핑퐁이 싫어서 여쭤본 겁니다.",re:"That ping-pong is exactly what I feared."},
+      {k:"장애는 거의 안 납니다.",e:"Failures almost never happen.",d:-5,rk:"'거의'라는 말이 더 불안하네요.",re:"'Almost' makes me more nervous."}]}]},
+{id:"M2",ind:"ins",role:"lob",tk:"보험사 심사부장 — 처리량이 고민",te:"Insurance claims director — throughput",
+ turns:[
+ {ck:"심사팀이 서류에 파묻혀 있어요. AI가 정말 도움이 됩니까?",ce:"My team is buried in paperwork. Does AI really help?",
+  ch:[{k:"청구 서류를 AI가 자동 추출·분류하면 심사자는 판단만 하면 됩니다. 처리 시간이 며칠에서 몇 분으로 줄어든 사례가 있습니다.",e:"AI extracts and sorts claim docs so adjusters only judge. Cases went from days to minutes.",d:18,rk:"처리 시간이 그렇게 준다면 얘기가 다르죠.",re:"That kind of speed changes everything.",b:1},
+      {k:"AI는 4차 산업혁명의 핵심 기술입니다.",e:"AI is the core of the 4th industrial revolution.",d:-20,rk:"교과서 말고 우리 업무 얘기를 해주세요.",re:"Skip the textbook — talk about my work."},
+      {k:"일단 서버부터 도입하시죠.",e:"Let's start by buying servers.",d:-5,rk:"서버를 사면 서류가 줄어드나요?",re:"Will servers shrink my paper pile?"}]},
+ {ck:"도입하면 우리 심사 인력은 어떻게 되는 거죠?",ce:"What happens to my adjusters if we adopt this?",
+  ch:[{k:"인력을 줄이는 게 아니라, 단순 입력에서 벗어나 고난도 심사와 고객 응대에 집중하게 됩니다.",e:"Not headcount cuts — they move from typing to complex judgment and customer care.",d:15,rk:"직원들에게 그렇게 설명할 수 있겠네요.",re:"I can explain it to my team that way.",b:1},
+      {k:"인건비 절감이 가장 큰 효과입니다.",e:"Labor cost cuts are the biggest benefit.",d:-20,rk:"우리 팀을 없애자는 제안처럼 들리는군요.",re:"Sounds like you're proposing to cut my team."},
+      {k:"그건 인사팀 이슈라 저희와 무관합니다.",e:"That's an HR issue, not ours.",d:-5,rk:"도입 효과를 물은 건데요.",re:"I asked about the impact."}]},
+ {ck:"효과가 있다는 걸 회사에 어떻게 보고하죠?",ce:"How do I report the benefit upward?",
+  ch:[{k:"PoC로 처리시간·정확도를 수치로 뽑아 드립니다. 건당 처리비용 절감액으로 ROI 보고서를 함께 만들어 드리죠.",e:"A PoC gives you numbers — time and accuracy. We'll build the ROI report per-claim with you.",d:18,rk:"보고 자료까지 함께라니 든든합니다.",re:"Help with the report itself — great.",b:1},
+      {k:"효과는 도입하고 나면 자연히 보입니다.",e:"You'll see benefits after adoption.",d:-5,rk:"보고는 도입 전에 해야 하는데요.",re:"I must report before we adopt."},
+      {k:"경쟁 보험사도 이미 다 합니다.",e:"Your competitors already do it.",d:0,rk:"그건 참고는 되지만 근거는 아니죠.",re:"Noted, but that's not evidence."}]}]},
+{id:"M3",ind:"sec",role:"ai",tk:"증권사 AI 담당자 — GPU 전쟁 중",te:"Securities AI lead — GPU wars",
+ turns:[
+ {ck:"퀀트팀, 리서치팀이 GPU를 서로 차지하려고 싸웁니다. 장비 살 예산은 없고요.",ce:"Quant and research fight over GPUs. No budget for more.",
+  ch:[{k:"AI Pub으로 GPU 1장을 최대 100조각까지 분할해 팀별로 할당·회수할 수 있습니다. 추가 구매 없이 해결됩니다.",e:"AI Pub splits one GPU into up to 100 blocks with per-team allocation. No new hardware.",d:18,rk:"분할 할당이 그렇게까지 된다고요?",re:"It partitions that finely?",b:1},
+      {k:"GPU는 결국 더 사셔야 합니다.",e:"You'll have to buy more GPUs eventually.",d:-20,rk:"예산이 없다고 말씀드렸는데요.",re:"I just said there's no budget."},
+      {k:"팀끼리 회의해서 정하시면 됩니다.",e:"Have the teams meet and decide.",d:-5,rk:"그게 안 되니까 부른 겁니다.",re:"We called you because that failed."}]},
+ {ck:"자원을 나누면 누가 얼마나 썼는지 정산도 돼야 하는데요.",ce:"If we share, we need usage accounting per team.",
+  ch:[{k:"AI Pub은 100개 이상 지표로 사용량을 추적하고 팀별 Billing·Chargeback 리포트까지 자동 생성합니다.",e:"AI Pub tracks 100+ metrics with automated per-team billing and chargeback reports.",d:18,rk:"정산 리포트가 자동이면 관리가 되겠네요.",re:"Automated chargeback — that's manageable.",b:1},
+      {k:"엑셀로 정리하시면 됩니다.",e:"You can track it in Excel.",d:-20,rk:"그걸 자동화하려고 AI를 하자는 건데요…",re:"We're doing AI to escape Excel…"},
+      {k:"정산까지는 어렵습니다.",e:"Accounting is hard to provide.",d:-5,rk:"그럼 반쪽짜리 아닌가요?",re:"Then it's half a solution."}]},
+ {ck:"보안팀이 외부 솔루션 도입에 민감한데, 권한 관리는 어떻게 되죠?",ce:"Our security team is strict — how is access controlled?",
+  ch:[{k:"RBAC 기반 권한 제어로 팀 단위 격리와 안전한 자원 공유를 지원합니다. 사용자 간 간섭도 차단됩니다.",e:"RBAC-based control with team isolation and safe sharing — no cross-user interference.",d:15,rk:"보안팀 설득 포인트가 되겠습니다.",re:"That's a point our security team will accept.",b:1},
+      {k:"보안은 크게 신경 안 쓰셔도 됩니다.",e:"Security isn't a big deal here.",d:-20,rk:"증권사에서 그 말은 금기어입니다.",re:"Never say that at a securities firm."},
+      {k:"방화벽이 있으니 괜찮습니다.",e:"You have a firewall, it's fine.",d:-5,rk:"내부 권한 관리를 물은 건데요.",re:"I asked about internal access control."}]}]},
+{id:"M4",ind:"sec",role:"cio",tk:"증권사 CIO — 레퍼런스를 원한다",te:"Securities CIO — wants references",
+ turns:[
+ {ck:"금융권 도입 사례가 있습니까? 우리가 첫 번째는 곤란합니다.",ce:"Any finance references? We can't be first.",
+  ch:[{k:"금융권에 AI OCR·온프레미스 LLM 구축 사례가 있고, 동종 업계 구성 그대로 제안 가능합니다. 레퍼런스 미팅도 주선하겠습니다.",e:"We have finance deployments of AI OCR and on-prem LLM, and can arrange reference calls.",d:18,rk:"레퍼런스 미팅까지 된다면 검토해 보죠.",re:"Reference calls? Then let's review.",b:1},
+      {k:"첫 고객이 되시면 할인해 드립니다.",e:"Be our first customer and get a discount.",d:-20,rk:"우리는 실험대상이 되고 싶지 않습니다.",re:"We don't want to be the guinea pig."},
+      {k:"사례는 비밀이라 말씀 못 드립니다.",e:"References are confidential, can't share.",d:-5,rk:"그럼 신뢰할 근거가 없잖습니까.",re:"Then what do I trust?"}]},
+ {ck:"클라우드 AI 서비스를 쓰면 되지, 굳이 구축할 이유가 있나요?",ce:"Why build, when cloud AI services exist?",
+  ch:[{k:"금융 규제상 고객 데이터의 외부 전송이 문제가 됩니다. 온프레미스는 데이터 주권과 장기 비용 관점에서 유리하고, 토큰 비용도 통제됩니다.",e:"Regulation restricts sending customer data out. On-prem wins on data sovereignty and long-run token cost control.",d:18,rk:"데이터 주권 관점은 설득력이 있네요.",re:"The sovereignty angle is convincing.",b:1},
+      {k:"클라우드는 무조건 나쁩니다.",e:"Cloud is simply bad.",d:-20,rk:"우리도 클라우드 씁니다만…",re:"We do use cloud, you know…"},
+      {k:"요즘 유행이 온프레미스입니다.",e:"On-prem is trendy now.",d:-5,rk:"유행 따라 수십억을 쓸 순 없죠.",re:"We don't spend billions on trends."}]},
+ {ck:"도입한다면 실패 리스크는 어떻게 줄입니까?",ce:"How do we reduce the risk of failure?",
+  ch:[{k:"PoC 센터에서 실데이터로 무상 검증 → 성공 기준 합의 → 단계적 확산. 검증 결과가 기준에 못 미치면 도입하지 않으셔도 됩니다.",e:"Free PoC with real data → agreed success criteria → phased rollout. If results miss the bar, don't adopt.",d:18,rk:"검증 후 결정이라면 리스크가 없군요.",re:"Verify then decide — that's low risk.",b:1},
+      {k:"계약서에 위약금 조항을 넣으시죠.",e:"Put penalties in the contract.",d:-5,rk:"소송보다 성공이 목표인데요.",re:"I want success, not lawsuits."},
+      {k:"리스크 없는 사업이 어디 있습니까.",e:"No business is risk-free.",d:-20,rk:"리스크를 줄이는 게 당신 일이잖아요.",re:"Reducing risk is your job."}]}]},
+{id:"M5",ind:"fin",role:"ops",tk:"은행 전산실장 — 운영 인력이 없다",te:"Bank IT ops manager — short-staffed",
+ turns:[
+ {ck:"AI 좋은 건 알겠는데, 우리 인력으론 운영을 못 합니다. 관제 인력도 부족해요.",ce:"AI sounds nice, but we can't operate it — we're short on monitoring staff.",
+  ch:[{k:"그래서 All-in-One입니다. 사전 구성된 어플라이언스라 운영 부담이 최소화되고, 다올TS가 통합 관제를 지원합니다.",e:"That's why it's all-in-one: a pre-configured appliance with minimal ops burden, monitored with DaolTS support.",d:18,rk:"운영을 같이 봐준다면 해볼 만하겠네요.",re:"With operations support, it's feasible.",b:1},
+      {k:"운영 인력을 새로 뽑으시면 됩니다.",e:"Just hire more ops staff.",d:-20,rk:"그 예산이 없다는 얘기를 한 건데요.",re:"I just said we can't."},
+      {k:"AI가 알아서 다 돌아갑니다.",e:"AI runs itself.",d:-5,rk:"25년 전산 인생에 알아서 되는 건 없었습니다.",re:"25 years in IT — nothing runs itself."}]},
+ {ck:"기존 시스템과 호환은요? 우리는 장비가 제각각입니다.",ce:"Compatibility with our mixed legacy systems?",
+  ch:[{k:"Dell 인프라 기반의 검증된 호환성이 강점입니다. 사전 검증된 조합이라 오픈소스를 직접 조립할 때 같은 호환성 리스크가 없습니다.",e:"Verified compatibility on Dell infrastructure — pre-validated stacks, unlike DIY open source.",d:15,rk:"조립 리스크가 없다는 건 크네요.",re:"No DIY risk — that matters.",b:1},
+      {k:"호환 안 되면 그때 가서 보죠.",e:"We'll see if something breaks.",d:-20,rk:"은행 시스템을 그렇게 다루면 큰일 납니다.",re:"You can't treat bank systems that way."},
+      {k:"전부 새로 바꾸시는 게 낫습니다.",e:"Better to replace everything.",d:-5,rk:"예산이 몇 배로 뛰는데요?",re:"That multiplies the budget."}]},
+ {ck:"솔직히 유지보수 계약이 제일 걱정입니다. 업체들이 서로 미루더군요.",ce:"Honestly, maintenance contracts worry me — vendors pass the buck.",
+  ch:[{k:"저희는 '핑퐁 금지'가 원칙입니다. 다올Fusion 플랫폼 위에서 ISV까지 통합 관제하므로 이슈 발생 시 저희가 1차 대응과 원인 분석까지 합니다.",e:"Our rule is 'no ping-pong.' We monitor ISVs on the platform and own first response and root cause.",d:18,rk:"그 원칙, 계약서에 꼭 넣어주세요.",re:"Put that rule in the contract, please.",b:1},
+      {k:"유지보수는 별도 계약입니다.",e:"Maintenance is a separate contract.",d:-5,rk:"조건부터 말씀해 주셔야죠.",re:"Then state the terms up front."},
+      {k:"저희는 장애가 거의 없어서요.",e:"We rarely have failures.",d:-5,rk:"'거의'가 은행에선 사고입니다.",re:"'Rarely' is an incident at a bank."}]}]},
+{id:"M6",ind:"fin",role:"lob",tk:"캐피탈사 심사본부장 — 숫자로 말해라",te:"Capital firm credit head — show me numbers",
+ turns:[
+ {ck:"AI 도입하면 심사 건당 비용이 얼마나 줄어듭니까? 숫자로 말해 주세요.",ce:"How much does per-case cost drop? Give me numbers.",
+  ch:[{k:"고객사 사례 기준 서류 처리 시간이 대폭 단축됐습니다. 귀사 실데이터로 PoC를 돌려 건당 비용 절감액을 직접 산출해 드리겠습니다.",e:"References show large time cuts. Let's run a PoC on your data and compute your per-case savings.",d:18,rk:"우리 숫자로 뽑아준다니 좋습니다.",re:"Our own numbers — good.",b:1},
+      {k:"AI는 비용이 아니라 미래를 위한 투자입니다.",e:"AI is an investment in the future, not a cost.",d:-20,rk:"멋진 말이지만 저는 KPI로 삽니다.",re:"Nice words, but I live on KPIs."},
+      {k:"대략 많이 줄어듭니다.",e:"Roughly, a lot.",d:-5,rk:"'대략'으론 품의를 못 올립니다.",re:"'Roughly' won't pass approval."}]},
+ {ck:"심사 자동화라면 결국 룰 기반 아닙니까? 예전에 해봤는데 실패했어요.",ce:"Isn't this just rule-based automation? We tried and failed.",
+  ch:[{k:"룰이 아니라 문서를 이해하는 AI입니다. 비정형 서류를 VLM이 읽고, 업무특화 RAG가 심사 규정을 근거로 판단을 보조합니다. 실패하셨던 지점부터 PoC로 확인하시죠.",e:"Not rules — AI that reads documents. VLM parses unstructured files; task-specific RAG grounds judgment in your policies. Let's PoC exactly where you failed before.",d:18,rk:"실패했던 지점부터 검증한다… 마음에 드네요.",re:"Testing where we failed — I like that.",b:1},
+      {k:"예전 기술과는 완전히 다릅니다. 믿어보세요.",e:"It's totally different now, trust me.",d:-5,rk:"믿음은 검증 다음입니다.",re:"Trust comes after proof."},
+      {k:"그때 업체가 실력이 없었나 보죠.",e:"Your old vendor must've been bad.",d:-20,rk:"그 업체 선정한 게 접니다만.",re:"I picked that vendor, you know."}]},
+ {ck:"경영진 보고에 쓸 핵심 한 줄이 필요합니다.",ce:"I need one line for the executive report.",
+  ch:[{k:"'검증된 ISV 일체형 도입으로 심사 처리시간 단축과 건당 비용 절감을 PoC 수치로 확인 후 단계 도입' — 리스크 없이 성과만 가져가는 구조입니다.",e:"'Phased adoption after PoC-verified cuts in processing time and per-case cost' — benefits without the risk.",d:15,rk:"그대로 보고서에 쓰겠습니다.",re:"Going straight into my report.",b:1},
+      {k:"'AI 트렌드에 동참' 어떻습니까?",e:"How about 'joining the AI trend'?",d:-20,rk:"트렌드로는 예산이 안 나옵니다.",re:"Trends don't get budgets."},
+      {k:"한 줄로는 어렵고 30장 자료를 드리죠.",e:"Hard in one line — here's 30 slides.",d:-5,rk:"경영진은 30장을 안 읽습니다.",re:"Executives don't read 30 slides."}]}]},
+{id:"M7",ind:"pub",role:"ops",tk:"공공기관 전산실장 — 예산과 경험 부족",te:"Public agency IT manager — tight budget, no experience",
+ turns:[
+ {ck:"AI를 하라는 지시는 내려왔는데, 예산도 적고 해본 사람도 없습니다.",ce:"We're ordered to 'do AI' — small budget, zero experience.",
+  ch:[{k:"그런 기관을 위해 Starter 구성이 있습니다. 사전 구성된 장비라 구축 경험이 없어도 Day1부터 쓸 수 있고, 비용도 단계 도입으로 최소화됩니다.",e:"Starter exists exactly for this: pre-configured, usable from day one without build experience, phased cost.",d:18,rk:"경험 없이도 된다는 게 제일 중요합니다.",re:"Working without expertise — that's key.",b:1},
+      {k:"우선 컨설팅부터 6개월 받으시죠.",e:"Start with 6 months of consulting.",d:-5,rk:"예산이 적다고 말씀드렸는데요.",re:"I said the budget is small."},
+      {k:"AI는 원래 어렵습니다.",e:"AI is inherently hard.",d:-20,rk:"위로가 아니라 방법을 듣고 싶습니다.",re:"I need solutions, not sympathy."}]},
+ {ck:"국산 솔루션 우선 요건이 있습니다. 외산 위주 아닌가요?",ce:"We must prefer domestic solutions. Isn't this foreign-heavy?",
+  ch:[{k:"핵심이 국산입니다. 업스테이지 Solar 같은 국산 최고 수준 모델과 몬드리안AI 등 국내 ISV 솔루션 조합이라 소버린 AI 요건에 정확히 맞습니다.",e:"The core is Korean — Upstage Solar plus domestic ISVs like Mondrian AI. It fits sovereign-AI requirements precisely.",d:18,rk:"국산 모델 조합이라면 요건 충족이 되겠네요.",re:"Korean models — that meets the rule.",b:1},
+      {k:"요즘 국산·외산 구분이 무의미합니다.",e:"The domestic/foreign divide is meaningless now.",d:-20,rk:"저희 규정에는 의미가 있습니다.",re:"It's meaningful in our regulations."},
+      {k:"글쎄요, 확인해 보겠습니다.",e:"Hmm, I'll have to check.",d:-5,rk:"준비가 안 되신 것 같네요.",re:"You seem unprepared."}]},
+ {ck:"감사에 대비해 도입 근거를 남겨야 합니다. 어떻게 하죠?",ce:"We need an audit trail justifying adoption.",
+  ch:[{k:"PoC 검증 보고서가 곧 도입 근거가 됩니다. 성능·비용 수치와 국산 요건 충족 내역을 문서로 정리해 드리겠습니다.",e:"The PoC report becomes your justification — performance, cost, and domestic-requirement compliance, documented.",d:15,rk:"감사 대응 문서까지, 꼼꼼하시네요.",re:"Audit-ready documents — thorough.",b:1},
+      {k:"감사는 걸리면 그때 대응하시죠.",e:"Deal with audits when they come.",d:-20,rk:"공공기관에서 그러다 큰일 납니다.",re:"That's how careers end in public service."},
+      {k:"다른 기관도 다 하니 괜찮습니다.",e:"Everyone else does it, so it's fine.",d:-5,rk:"'남들도 한다'는 감사 근거가 아닙니다.",re:"'Everyone does it' isn't a justification."}]}]},
+{id:"M8",ind:"pub",role:"caio",tk:"지자체 CAIO — AI 행정 비전",te:"City CAIO — AI government vision",
+ turns:[
+ {ck:"시민 체감형 AI 행정 서비스를 만들고 싶습니다. 어디서 시작해야 할까요?",ce:"We want AI services citizens can feel. Where to start?",
+  ch:[{k:"민원 응대·문서 안내처럼 반복량이 많고 효과가 눈에 보이는 업무부터 시작해, 성공 사례를 만들고 확산하는 로드맵을 권합니다.",e:"Start with high-volume, visible work — civil inquiries, document guidance — build a win, then scale.",d:18,rk:"작게 이겨서 확산한다, 동의합니다.",re:"Win small, then scale — agreed.",b:1},
+      {k:"전 부서에 한 번에 도입하시죠.",e:"Roll out to every department at once.",d:-20,rk:"실패하면 시의회가 가만 안 둡니다.",re:"If that fails, the council will roast us."},
+      {k:"일단 챗봇 하나 만들어 보시죠.",e:"Just build a chatbot first.",d:-5,rk:"챗봇은 10년 전에도 했습니다.",re:"We built chatbots a decade ago."}]},
+ {ck:"시민 데이터를 다루니 민간 클라우드 AI는 곤란합니다.",ce:"Citizen data means public cloud AI is off the table.",
+  ch:[{k:"온프레미스 구축에 업스테이지 Solar 같은 국산 모델 기반이면 데이터 주권과 소버린 요건을 모두 충족합니다. 규제 환경에 최적화된 구성입니다.",e:"On-prem with a Korean model like Upstage Solar meets both data sovereignty and sovereign-AI rules — built for regulated environments.",d:18,rk:"딱 저희 조건에 맞는 구성이군요.",re:"That fits our constraints exactly.",b:1},
+      {k:"클라우드도 보안이 좋아졌습니다.",e:"Cloud security has improved a lot.",d:-5,rk:"제 말을 안 들으셨군요.",re:"You didn't hear me."},
+      {k:"데이터는 어차피 다 뚫립니다.",e:"All data leaks eventually.",d:-20,rk:"그 발언, 기록에 남기겠습니다.",re:"I'm putting that remark on record."}]},
+ {ck:"예산 심의에서 '왜 이 구성이냐'를 방어해야 합니다.",ce:"I must defend this configuration in budget review.",
+  ch:[{k:"검증된 일체형이라 SI 대비 구축 기간·비용이 절감되고, PoC 수치가 근거가 됩니다. 단계별 확산 계획서까지 함께 준비해 드리겠습니다.",e:"Pre-integrated cuts build time and cost vs. SI; PoC numbers are your evidence. We'll prepare the phased plan with you.",d:15,rk:"심의 자료를 같이 만들어준다니 좋네요.",re:"Help with the review docs — excellent.",b:1},
+      {k:"싸니까 통과될 겁니다.",e:"It's cheap, it'll pass.",d:-5,rk:"싼 게 근거가 되진 않죠.",re:"Cheap isn't a rationale."},
+      {k:"심의는 알아서 잘 하시리라 믿습니다.",e:"I'm sure you'll handle the review.",d:-20,rk:"파트너라면서요?",re:"Some partner you are."}]}]},
+{id:"M9",ind:"lab",role:"caio",tk:"연구소 CAIO — 모델·거버넌스 고민",te:"Research institute CAIO — models and governance",
+ turns:[
+ {ck:"연구팀마다 쓰는 모델·툴이 달라서 관리가 안 됩니다. 표준화가 필요해요.",ce:"Every team uses different models and tools. We need standardization.",
+  ch:[{k:"MLOps 플랫폼으로 개발·배포·모니터링을 일원화하면 팀별 자율성은 유지하면서 거버넌스를 세울 수 있습니다. Yennefer·AI Pub 조합이 그 역할을 합니다.",e:"An MLOps platform unifies dev-deploy-monitor while keeping team autonomy — the Yennefer + AI Pub combination.",d:18,rk:"자율성과 거버넌스를 같이 가져간다면 좋죠.",re:"Autonomy plus governance — ideal.",b:1},
+      {k:"모델을 하나로 강제 통일하시죠.",e:"Force everyone onto one model.",d:-20,rk:"연구소에서 그러면 반란 납니다.",re:"That would spark a revolt here."},
+      {k:"관리는 원래 안 되는 겁니다.",e:"Management is always chaos.",d:-5,rk:"그걸 해결하자고 모신 겁니다.",re:"You're here to fix that."}]},
+ {ck:"최신 모델이 계속 나오는데, 지금 구축하면 금방 구식이 되지 않나요?",ce:"New models keep coming — won't this be obsolete fast?",
+  ch:[{k:"그래서 플랫폼이 중요합니다. 인프라와 운영 체계는 그대로 두고 모델만 교체하는 구조라, Solar 등 신모델이 나와도 갈아끼우면 됩니다.",e:"That's why the platform matters: infra and ops stay, models swap. New models like Solar just slot in.",d:18,rk:"모델 교체형 구조라면 안심이네요.",re:"Swappable models — reassuring.",b:1},
+      {k:"어차피 뭘 사도 구식이 됩니다.",e:"Everything becomes obsolete anyway.",d:-20,rk:"그럼 왜 사라는 겁니까?",re:"Then why buy anything?"},
+      {k:"최신 모델은 과대평가입니다.",e:"New models are overrated.",d:-5,rk:"연구소 상대로 그 말은 무리수네요.",re:"Bold claim to make at a research lab."}]},
+ {ck:"GPU 자원 사용 현황을 경영진에 보고해야 하는데 파악이 안 됩니다.",ce:"I must report GPU utilization to management, but we can't measure it.",
+  ch:[{k:"AI Pub이 100개 이상 지표로 워크로드를 분석하고 자동 리포트를 만들어 줍니다. 어느 팀이 얼마나 쓰는지, 유휴율까지 한눈에 보입니다.",e:"AI Pub analyzes workloads on 100+ metrics with automated reports — usage per team, idle rates, at a glance.",d:15,rk:"보고 자동화면 제 일이 하나 줄겠군요.",re:"Automated reporting — one less headache.",b:1},
+      {k:"수기로 집계하시면 됩니다.",e:"Tally it manually.",d:-20,rk:"GPU가 수백 장인데요?",re:"We have hundreds of GPUs."},
+      {k:"경영진이 그걸 왜 궁금해할까요?",e:"Why would management care?",d:-5,rk:"수십억 자산이니까요.",re:"Because it's billions in assets."}]}]},
+{id:"M10",ind:"uni",role:"ai",tk:"대학 AI센터 담당자 — 공유 GPU 팜",te:"University AI center lead — shared GPU farm",
+ turns:[
+ {ck:"학생·연구팀 수백 명이 GPU 몇 대를 나눠 써야 합니다. 예약 전쟁이에요.",ce:"Hundreds of students share a few GPUs. It's reservation warfare.",
+  ch:[{k:"GPU 분할 가상화로 1장을 수십 명이 동시에 쓰게 하고, 스케줄러가 할당·회수를 자동화합니다. 예약 전쟁이 사라집니다.",e:"GPU partitioning lets dozens share one card; the scheduler automates allocation. Reservation wars end.",d:18,rk:"학생들 민원이 줄어들겠네요.",re:"Fewer student complaints — finally.",b:1},
+      {k:"우수 연구팀에만 몰아주시죠.",e:"Give GPUs only to top teams.",d:-20,rk:"교육기관에서 그럴 순 없습니다.",re:"We're an educational institution."},
+      {k:"클라우드 크레딧을 사서 나눠주세요.",e:"Buy cloud credits for everyone.",d:-5,rk:"매년 반복 비용이라 총장님이 싫어하십니다.",re:"Recurring costs — the president hates those."}]},
+ {ck:"학과별로 요구 스펙이 제각각인데 다 맞출 수 있나요?",ce:"Departments need different specs — can you serve all?",
+  ch:[{k:"프로젝트별로 자원 크기를 유연하게 할당·회수할 수 있습니다. 단일 노드부터 클러스터까지 같은 방식으로 확장됩니다.",e:"Resources are flexibly allocated per project, from single node to cluster with the same interface.",d:15,rk:"확장 방식이 일관된 게 좋네요.",re:"Consistent scaling — nice.",b:1},
+      {k:"제일 큰 스펙에 맞추면 됩니다.",e:"Just size for the biggest need.",d:-5,rk:"예산이 폭발할 텐데요.",re:"The budget would explode."},
+      {k:"요구가 많은 학과는 거절하세요.",e:"Reject the demanding departments.",d:-20,rk:"그 학과 학장이 제 지도교수님입니다.",re:"That dean was my thesis advisor."}]},
+ {ck:"솔직히 담당자가 저 혼자라, 복잡하면 못 씁니다.",ce:"Honestly, I'm the only admin. If it's complex, it's dead.",
+  ch:[{k:"운영자 1인을 전제로 한 통합 콘솔과 자동화가 강점입니다. 거기에 다올TS One-call 지원이 붙으니 혼자서도 운영 가능합니다.",e:"Built for a one-person admin: unified console, automation, plus DaolTS one-call support behind you.",d:18,rk:"혼자 운영 가능하다는 말, 믿어보겠습니다.",re:"One-person ops — I'll hold you to it.",b:1},
+      {k:"운영 교육을 3개월 받으시면 됩니다.",e:"Take a 3-month admin course.",d:-5,rk:"수업은 누가 하고요?",re:"And who teaches my classes?"},
+      {k:"조교를 뽑으시죠.",e:"Hire a TA.",d:-5,rk:"TO가 없습니다…",re:"No headcount…"}]}]},
+{id:"M11",ind:"def",role:"cio",tk:"방산기업 CIO — 완전 폐쇄망",te:"Defense CIO — fully air-gapped",
+ turns:[
+ {ck:"우리는 인터넷과 완전히 분리된 폐쇄망입니다. AI가 가능하긴 합니까?",ce:"We're fully air-gapped. Is AI even possible?",
+  ch:[{k:"가능합니다. 온프레미스 일체형이라 외부 연결 없이 폐쇄망 안에서 LLM·OCR·에이전트가 모두 동작합니다. 방산·보안 환경이 저희가 가장 잘하는 영역입니다.",e:"Yes. The on-prem appliance runs LLM, OCR, and agents entirely inside the closed network. Defense-grade environments are our specialty.",d:18,rk:"폐쇄망 전제 설계라면 들어볼 만하군요.",re:"Designed for air-gap — I'm listening.",b:1},
+      {k:"인터넷을 조금만 열면 됩니다.",e:"Just open the internet a little.",d:-20,rk:"그 '조금'이 보안사고의 시작입니다.",re:"That 'little' is how breaches start."},
+      {k:"폐쇄망에선 어렵습니다.",e:"Air-gapped is tough.",d:-5,rk:"그럼 미팅을 왜 오셨죠?",re:"Then why are you here?"}]},
+ {ck:"모델 업데이트는 어떻게 합니까? 폐쇄망인데.",ce:"How do model updates work in an air-gap?",
+  ch:[{k:"오프라인 업데이트 절차를 제공합니다. 검증된 모델·패치를 보안 절차에 따라 반입해 적용하고, 이력을 문서화합니다.",e:"Offline update procedures: validated models and patches brought in under security protocol, fully documented.",d:15,rk:"반입 절차까지 준비돼 있군요.",re:"Even the import protocol — prepared.",b:1},
+      {k:"업데이트는 포기하셔야죠.",e:"You'll have to skip updates.",d:-20,rk:"그건 방치 아닙니까.",re:"That's abandonment."},
+      {k:"USB로 대충 옮기면 됩니다.",e:"Just carry it in on a USB stick.",d:-20,rk:"우리 보안팀이 들으면 기절합니다.",re:"Our security team would faint."}]},
+ {ck:"도면·기술문서가 핵심 자산인데, AI 학습에 쓰면 유출 위험은요?",ce:"Our drawings are crown jewels. Training risk?",
+  ch:[{k:"학습·추론 모두 폐쇄망 내부에서만 이뤄지고 데이터는 한 발짝도 나가지 않습니다. 접근 권한도 RBAC로 통제됩니다.",e:"Training and inference happen entirely inside; data never leaves. Access is RBAC-controlled.",d:18,rk:"내부 완결형이라면 검토하겠습니다.",re:"Fully internal — we'll review it.",b:1},
+      {k:"유출돼도 AI 모델이라 복원은 어렵습니다.",e:"Even if leaked, models are hard to reverse.",d:-5,rk:"'유출돼도'라는 가정 자체가 싫습니다.",re:"I hate that hypothetical."},
+      {k:"보안은 귀사 책임 아닌가요?",e:"Isn't security your responsibility?",d:-20,rk:"파트너의 자세가 아니군요.",re:"Not a partner's attitude."}]}]},
+{id:"M12",ind:"smb",role:"lob",tk:"중견기업 대표 — 비용이 전부",te:"SMB owner — cost is everything",
+ turns:[
+ {ck:"대기업처럼 수십억 쓸 순 없습니다. 우리 규모에 AI가 말이 됩니까?",ce:"We can't spend billions like conglomerates. Does AI make sense at our size?",
+  ch:[{k:"그래서 Starter와 워크스테이션형 구성이 있습니다. 필요한 만큼 시작해 효과를 보고 키우는 방식이라 SMB에 오히려 적합합니다.",e:"That's what Starter and workstation-class setups are for — start small, prove value, then grow. It fits SMBs well.",d:18,rk:"작게 시작할 수 있다면 얘기가 되네요.",re:"Starting small — now we're talking.",b:1},
+      {k:"AI는 원래 대기업용입니다.",e:"AI is really for big companies.",d:-20,rk:"그럼 나가주시죠.",re:"Then please leave."},
+      {k:"은행 대출을 알아보시죠.",e:"Consider a bank loan.",d:-5,rk:"영업하러 오신 거 맞나요?",re:"Are you here to sell or to joke?"}]},
+ {ck:"직원 30명인데 IT 담당은 1명입니다. 누가 이걸 운영하죠?",ce:"Thirty employees, one IT person. Who runs this?",
+  ch:[{k:"사전 구성된 일체형이라 세팅이 필요 없고, 운영 이슈는 다올TS One-call로 해결됩니다. IT 담당자님 업무가 늘지 않게 설계했습니다.",e:"Pre-configured, no setup, and one-call support from DaolTS. Your IT person's workload doesn't grow.",d:18,rk:"우리 김대리가 살았네요.",re:"Our IT guy just got his life back.",b:1},
+      {k:"IT 인력을 더 뽑으셔야죠.",e:"You'll need to hire more IT staff.",d:-20,rk:"인건비 아끼려고 AI 하는 건데요.",re:"We're doing AI to save on headcount."},
+      {k:"요즘 젊은 직원들은 금방 배웁니다.",e:"Young employees learn fast.",d:-5,rk:"배우다 퇴사하면요?",re:"And when they quit?"}]},
+ {ck:"결국 우리한테 남는 게 뭡니까? 한 문장으로요.",ce:"Bottom line — what do we get? One sentence.",
+  ch:[{k:"'설치한 날부터 견적·문서 업무가 자동화되어, 사람은 파는 일에만 집중한다' — 이게 대표님께 남는 겁니다.",e:"'From day one, quotes and paperwork run themselves — your people just sell.' That's your bottom line.",d:18,rk:"그 한 문장, 마음에 듭니다.",re:"That sentence — sold.",b:1},
+      {k:"미래 경쟁력이 남습니다.",e:"You gain future competitiveness.",d:-5,rk:"미래 말고 이번 분기요.",re:"Not the future — this quarter."},
+      {k:"글쎄요, 케이스마다 다릅니다.",e:"Well, it depends.",d:-20,rk:"준비 안 된 영업이군요.",re:"An unprepared pitch."}]}]}];
+/* ===== Level 5. 보스전 (제안 챌린지) ===== */
+var L5_BOSS=[
+{id:"B1",tk:"보스 1 — 대형 보험사",te:"Boss 1 — Major insurer",
+ bk:"[고객 브리핑] 대형 보험사. 요구: ① 고객 개인정보 보호를 위한 온프레미스 생성형 AI ② 청구 서류 AI OCR 자동화 ③ 금융 보안 규제 대응 필수 ④ 실패 리스크 최소화.",
+ be:"[Brief] Major insurer. Needs: ① on-prem generative AI for privacy ② AI OCR for claim documents ③ financial security compliance ④ minimal risk.",
+ steps:[
+ {ko:{o:["Starter (AI Factory + ISV)","Pro (+ Security)","Max (+ Cloud + Data)"],exp:"보안 규제 대응이 '필수'로 명시 — Security 포함 Pro가 정답."},en:{o:["Starter","Pro (+ Security)","Max (+ Cloud + Data)"],exp:"Security compliance is mandatory — Pro."},a:1},
+ {ko:{o:["DEEPX NPU + Nota NVA (영상관제 조합)","Upstage Solar LLM + Document Parse (온프레미스 LLM + AI OCR)","TEN AI Pub 단독 (GPU 분할)"],exp:"온프레미스 LLM + 문서 OCR 요구 = Solar LLM + Document Parse 조합."},en:{o:["DEEPX NPU + Nota NVA (video)","Upstage Solar LLM + Document Parse (on-prem LLM + AI OCR)","TEN AI Pub alone (GPU split)"],exp:"On-prem LLM + document OCR = Solar + Document Parse."},a:1},
+ {ko:{o:["'최신 GPU라서 빠릅니다' (스펙 강조)","'데이터가 사외로 나가지 않고, 설치 즉시 청구 업무에 적용됩니다' (보안 + Time-to-Value)","'요즘 다 하는 AI입니다' (유행 강조)"],exp:"고객 Pain Point(보안)와 비즈니스 가치(즉시 적용)를 연결한 Benefit이 정답."},en:{o:["'Fastest new GPUs' (spec pitch)","'Data never leaves, and claims work starts the day it's installed' (security + time-to-value)","'Everyone's doing AI' (trend pitch)"],exp:"Tie their pain (security) to business value (instant use)."},a:1},
+ {ko:{o:["'금융권 레퍼런스 구성 그대로, PoC 센터에서 귀사 청구 서류로 무상 검증 후 결정하시죠.'","'이번 달 계약하면 할인해 드립니다.'","'일단 믿고 도입해 보시죠.'"],exp:"리스크 최소화 요구 → 레퍼런스 + 무상 PoC 검증 클로징이 정답."},en:{o:["'Same configuration as our finance references — validate free at our PoC center with your claim forms, then decide.'","'Sign this month for a discount.'","'Just trust us and adopt.'"],exp:"They want low risk → references + free PoC closing."},a:0}]},
+{id:"B2",tk:"보스 2 — 광역 지자체",te:"Boss 2 — Metropolitan government",
+ bk:"[고객 브리핑] 광역 지자체. 요구: ① 예산 제한 속 경제적인 AI Agent 도입 ② 국산(소버린) AI 요건 ③ AI 구축 경험 없는 조직 ④ 시민 민원 업무 자동화가 1차 목표.",
+ be:"[Brief] Metro government. Needs: ① affordable AI agents on a tight budget ② sovereign (Korean) AI ③ no build experience ④ civil-complaint automation first.",
+ steps:[
+ {ko:{o:["Starter (AI Factory + ISV)","Pro (+ Security)","Max (+ Cloud + Data)"],exp:"예산 제한 + 명확한 1차 목표 → 경제적인 Starter로 시작해 확산."},en:{o:["Starter","Pro (+ Security)","Max (+ Cloud + Data)"],exp:"Tight budget + clear first target → start with Starter."},a:0},
+ {ko:{o:["Upstage Solar (국산 모델) + Mondrian AI 플랫폼 (민원 업무 자동화 기반)","해외 클라우드 LLM API","DEEPX NPU 단독"],exp:"소버린 요건 = 국산 Solar, 공공 레퍼런스와 합리적 비용 = 몬드리안AI 플랫폼 조합."},en:{o:["Upstage Solar (Korean model) + Mondrian AI platform (complaint automation base)","Foreign cloud LLM API","DEEPX NPU alone"],exp:"Sovereign = Korean Solar; public-sector strength and cost = Mondrian AI platform."},a:0},
+ {ko:{o:["'글로벌 최신 기술을 도입하는 겁니다'","'구축 경험이 없어도 Day1부터 사용 가능하고, 이슈는 다올TS 한 곳이 책임집니다' (Turn-key + One-call)","'AI로 인력을 줄일 수 있습니다'"],exp:"경험 없는 조직의 불안 해소 = Turn-key 즉시 사용 + One-call 지원."},en:{o:["'You're adopting cutting-edge global tech'","'Usable from day one without build experience, and DaolTS owns every issue' (turn-key + one-call)","'AI lets you cut staff'"],exp:"Calm the inexperienced org: turn-key + one-call."},a:1},
+ {ko:{o:["'전 부서 일괄 도입 계약부터 하시죠.'","'민원 업무 1개로 PoC 무상 검증 → 성과 확인 → 단계 확산 로드맵으로 안전하게 시작하시죠.'","'예산을 더 확보되면 다시 연락 주세요.'"],exp:"작게 검증하고 단계 확산 — 공공 예산·감사 환경에 맞는 클로징."},en:{o:["'Sign an all-department rollout now.'","'Free PoC on one complaint workflow → verify results → phased rollout roadmap.'","'Call us when you have more budget.'"],exp:"Verify small, scale in phases — right for public budgets and audits."},a:1}]}];
+/* ===== 배지 ===== */
+var BADGES=[
+{id:"b1",i:"🏅",ko:["루키 졸업","Level 1. 클리어"],en:["Rookie graduate","Clear Level 1"]},
+{id:"b2",i:"🧭",ko:["다올 퓨전 탐험가","Level 2. 클리어"],en:["Daol Fusion explorer","Clear Level 2"]},
+{id:"b3",i:"🔗",ko:["다올 퓨전 ISV 커넥터","Level 3. 클리어"],en:["Daol Fusion ISV connector","Clear Level 3"]},
+{id:"b4",i:"🦸",ko:["다올 퓨전 세일즈 히어로","Level 4. 클리어"],en:["Daol Fusion sales hero","Clear Level 4"]},
+{id:"b5",i:"👑",ko:["다올 퓨전 마스터","Level 5. 클리어"],en:["Daol Fusion master","Clear Level 5"]},
+{id:"b6",i:"💯",ko:["무결점 루키","Level 1. 전 문항 정답"],en:["Flawless rookie","Perfect Level 1"]},
+{id:"b7",i:"⚡",ko:["스피드 커넥터","Level 3. 오답 없이 클리어"],en:["Speed connector","Clear Level 3. with no misses"]},
+{id:"b8",i:"💙",ko:["고객의 마음을 훔친 자","미팅 신뢰도 90% 이상"],en:["Heart stealer","Finish a meeting at 90%+ trust"]},
+{id:"b9",i:"🌏",ko:["전 산업 제패","8개 산업 미팅 모두 성공"],en:["Industry conqueror","Clear meetings in all 8 industries"]},
+{id:"b10",i:"📚",ko:["복습왕","오답노트 5개 극복"],en:["Review champion","Graduate 5 review notes"]},
+{id:"b11",i:"🔥",ko:["콤보 마스터","5연속 정답 달성"],en:["Combo master","5-answer streak"]},
+{id:"b12",i:"🏃",ko:["마라토너","5회차 이상 접속"],en:["Marathoner","Play 5+ sessions"]}];
+/* ================= ENGINE ================= */
+var S=null, DEF={lang:"ko",name:"",dept:"",inds:[],share:false,pts:0,clear:{},best:{},notes:[],hist:[],badges:[],l4picks:[],meet:{},sessions:0,lastDay:"",queue:[],onboarded:false,resume:null};
+function load(){try{S=JSON.parse(localStorage.getItem("dfq1"))||null;}catch(e){S=null;} if(!S)S=JSON.parse(JSON.stringify(DEF)); for(var k in DEF)if(S[k]===undefined)S[k]=JSON.parse(JSON.stringify(DEF[k]));}
+function save(){try{localStorage.setItem("dfq1",JSON.stringify(S));}catch(e){}}
+function t(k){return UI[S.lang][k];}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function $(id){return document.getElementById(id);}
+function app(h){$("app").innerHTML=h;window.scrollTo(0,0);}
+function pop(msg){var d=document.createElement("div");d.className="pop";d.textContent=msg;document.body.appendChild(d);setTimeout(function(){d.remove();},1300);}
+function hist(ev){S.hist.push({ts:Date.now(),ev:ev});if(S.hist.length>200)S.hist=S.hist.slice(-200);save();}
+function addP(n){if(n===0)return;S.pts=Math.max(0,S.pts+n);save();pop((n>0?"+":"")+n+" "+t("pts"));renderHud();}
+function titleOf(){var c=0;for(var i=1;i<=5;i++)if(S.clear["l"+i])c=i;return t("title")[Math.min(c,4)];}
+function award(id){if(S.badges.indexOf(id)>=0)return;S.badges.push(id);var b=BADGES.filter(function(x){return x.id===id;})[0];hist({t:"badge",id:id});pop("🏆 "+(S.lang==="ko"?b.ko[0]:b.en[0]));save();}
+function checkIndBadge(){var inds={};for(var i=0;i<L4_MEETINGS.length;i++){var m=L4_MEETINGS[i];if(S.meet[m.id]&&S.meet[m.id].ok)inds[m.ind]=1;}if(Object.keys(inds).length>=8)award("b9");}
+function addNote(cat,qid){var n=S.notes.filter(function(x){return x.cat===cat&&x.qid===qid;})[0];if(n){n.cnt++;n.streak=0;n.grad=false;}else S.notes.push({cat:cat,qid:qid,cnt:1,streak:0,grad:false,ts:Date.now()});save();}
+function noteItem(n){var arr={l1:L1_QUIZ,l2m:L2_MISSIONS,l2k:L2_QUIZ,l3:L3_ITEMS}[n.cat];if(arr)return arr.filter(function(x){return x.id===n.qid;})[0];if(n.cat==="l5"){var p=n.qid.split("-");var b=L5_BOSS[+p[0]];return{id:n.qid,type:"mc",boss:b,step:+p[1]};}return null;}
+/* ---- sync ---- */
+function sync(payload){if(!S.share)return;payload.name=S.name;payload.dept=S.dept;payload.ts=new Date().toISOString();if(!SYNC_URL){S.queue.push(payload);save();return;}
+ try{fetch(SYNC_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify(payload)}).then(function(){pop(t("synced"));}).catch(function(){S.queue.push(payload);save();pop(t("queued"));});}catch(e){S.queue.push(payload);save();}}
+function flushQueue(){if(!SYNC_URL||!S.share||!S.queue.length)return;var q=S.queue;S.queue=[];save();q.forEach(function(p){try{fetch(SYNC_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify(p)});}catch(e){S.queue.push(p);}});save();}
+/* ---- HUD & footer ---- */
+var hudInfo=null;
+function setHud(lv,passTxt,pct,markPct){hudInfo={lv:lv,passTxt:passTxt,pct:pct,markPct:markPct};renderHud();}
+function renderHud(){var h=hudInfo||{};var html='<div class="r1"><span class="lv">'+esc(h.lv||t("appname"))+'</span><span class="pts">'+S.pts+' '+t("pts")+' · '+esc(titleOf())+'</span></div>';
+ if(h.passTxt){html+='<div class="pass"><span>'+esc(h.passTxt)+'</span></div>';
+  html+='<div class="bar"><div class="fill" style="width:'+Math.min(100,h.pct||0)+'%"></div>'+(h.markPct!=null?'<div class="mark" style="left:'+h.markPct+'%"></div>':'')+'</div>';}
+ $("hud").innerHTML=html;}
+function renderFoot(cur){var items=[["home","🏠",t("home")],["note","📒",t("note")],["hist","🕘",t("hist")],["badge","🏆",t("badge")],["set","⚙️",t("set")]];
+ $("foot").innerHTML=items.map(function(it){return '<div class="fb'+(cur===it[0]?" on":"")+'" onclick="go(\''+it[0]+'\')"><span class="fi">'+it[1]+'</span>'+esc(it[2])+'</div>';}).join("");}
+function go(s){({home:scrHome,note:scrNote,hist:scrHist,badge:scrBadge,set:scrSet})[s]();}
+/* ---- Onboarding & settings ---- */
+function scrOnboard(){setHud(t("appname"),null,0,null);$("foot").innerHTML="";
+ var h='<div class="center" style="padding:18px 0 6px"><img src="'+LOGO+'" alt="Daol Fusion" style="height:44px;max-width:80%;object-fit:contain;margin-bottom:8px"><h2>'+t("onboardT")+'</h2><p class="sub">'+t("onboardD")+'</p></div>';
+ h+=formProfile(true);app(h);drawChips();}
+function scrSet(){setHud(t("set"),null,0,null);renderFoot("set");
+ var h='<h2>'+t("set")+'</h2>'+formProfile(false);
+ h+='<div class="card"><div class="row"><span>'+t("lang")+'</span><button class="chip on" onclick="toggleLang()">'+(S.lang==="ko"?"한국어 → English":"English → 한국어")+'</button></div></div>';
+ h+='<div class="card"><h3>📲 '+t("xferT")+'</h3><p class="dim" style="margin-bottom:10px">'+t("xferD")+'</p>'+
+ '<button class="btn" onclick="expData()">📤 '+t("xferOut")+'</button><div id="expout"></div>'+
+ '<textarea id="impbox" placeholder="'+t("xferPaste")+'" style="width:100%;background:var(--card2);border:1px solid var(--line);border-radius:8px;color:var(--txt);padding:11px;font-size:12px;margin:6px 0;min-height:70px;font-family:monospace"></textarea>'+
+ '<p class="dim" style="margin-bottom:8px">⚠️ '+t("xferWarn")+'</p>'+
+ '<button class="btn" onclick="impData()">📥 '+t("xferIn")+'</button></div>';
+ h+='<div class="card" style="border-color:var(--bad)"><h3 style="color:#f0997b">🗑 '+t("resetT")+'</h3><p class="dim" style="margin-bottom:10px">'+t("resetD")+'</p>'+
+ '<button class="btn no" onclick="resetAll()">'+t("resetBtn")+'</button></div>';
+ app(h);drawChips();}
+function resetAll(){if(!confirm(t("resetC")))return;var lg=S.lang;try{localStorage.removeItem("dfq1");}catch(e){}
+ S=JSON.parse(JSON.stringify(DEF));S.lang=lg;save();scrOnboard();}
+function expData(){var code="";try{code=btoa(unescape(encodeURIComponent(JSON.stringify(S))));}catch(e){return;}
+ var el=$("expout");el.innerHTML='<textarea readonly onclick="this.select()" style="width:100%;background:var(--card2);border:1px solid var(--good);border-radius:8px;color:var(--txt);padding:11px;font-size:12px;margin:6px 0;min-height:70px;font-family:monospace">'+code+'</textarea>';
+ try{navigator.clipboard.writeText(code).then(function(){pop(t("xferCopied"));});}catch(e){}}
+function impData(){var code=$("impbox").value.trim();if(!code){pop(t("xferBad"));return;}
+ try{var d=JSON.parse(decodeURIComponent(escape(atob(code))));if(!d||typeof d!=="object"||d.onboarded===undefined)throw 0;
+  for(var k in DEF)if(d[k]===undefined)d[k]=JSON.parse(JSON.stringify(DEF[k]));
+  S=d;save();pop(t("xferOk"));scrHome();}catch(e){pop(t("xferBad"));}}
+function formProfile(first){var h='<div class="card"><h3>'+t("name")+'</h3><input type="text" id="fname" value="'+esc(S.name)+'" placeholder="'+t("name")+'">';
+ h+='<h3>'+t("dept")+'</h3><input type="text" id="fdept" value="'+esc(S.dept)+'" placeholder="'+t("dept")+'">';
+ h+='<h3>'+t("inds")+'</h3><div id="chips"></div>';
+ h+='<div class="row" style="margin-top:8px"><div style="padding-right:10px"><b style="font-size:13px">'+t("share")+'</b><div class="dim">'+t("shareD")+'</div></div><div class="tgl'+(S.share?" on":"")+'" id="ftgl" onclick="this.classList.toggle(\'on\')"></div></div>';
+ h+='<button class="btn primary" style="margin-top:14px" onclick="saveProfile('+(first?1:0)+')">'+(first?t("start"):t("save"))+'</button></div>';return h;}
+var selInds=null;
+function drawChips(){selInds=S.inds.slice();var el=$("chips");if(!el)return;el.innerHTML=INDS.map(function(x){return '<span class="chip'+(selInds.indexOf(x.id)>=0?" on":"")+'" onclick="tapChip(\''+x.id+'\',this)">'+esc(S.lang==="ko"?x.ko:x.en)+'</span>';}).join("");}
+function tapChip(id,el){var i=selInds.indexOf(id);if(i>=0){selInds.splice(i,1);el.classList.remove("on");}else{if(selInds.length>=3)return;selInds.push(id);el.classList.add("on");}}
+function saveProfile(first){var nm=$("fname").value.trim();if(!nm){pop(t("needName"));return;}if(!selInds.length){pop(t("needInd"));return;}
+ S.name=nm;S.dept=$("fdept").value.trim();S.inds=selInds.slice();S.share=$("ftgl").classList.contains("on");S.onboarded=true;save();if(S.share)flushQueue();scrHome();}
+function toggleLang(){S.lang=S.lang==="ko"?"en":"ko";save();scrSet();}
+/* ---- Home ---- */
+function scrHome(){setHud(t("appname"),null,0,null);renderFoot("home");
+ var lvs=[[1,"lv1","lv1d",PASS.l1+"%"],[2,"lv2","lv2d",PASS.l2+"/4"],[3,"lv3","lv3d",PASS.l3+"%"],[4,"lv4","lv4d",t("trust")+" "+PASS.l4+"%×4"],[5,"lv5","lv5d",PASS.l5+"%"]];
+ var h='<div class="center" style="margin-bottom:14px"><img src="'+LOGO+'" alt="Daol Fusion" style="height:44px;max-width:80%;object-fit:contain">'+
+ '<div style="font-weight:600;margin-top:6px">'+esc(S.name)+'</div><div class="dim">'+esc(titleOf())+' · '+S.pts+' '+t("pts")+'</div></div>';
+ if(S.resume){h+='<div class="card" style="border-color:var(--gold)"><b style="font-size:14px">⏸ '+t("resumeT")+'</b><div class="dim" style="margin:4px 0 10px">'+esc(resumeLabel())+'</div>'+
+  '<div style="display:flex;gap:8px"><button class="btn primary" style="margin:0;padding:10px;font-size:13px" onclick="resumeGo()">'+t("resumeGo")+'</button>'+
+  '<button class="btn" style="margin:0;padding:10px;text-align:center;font-size:13px" onclick="resumeRestart()">'+t("resumeNo")+'</button></div></div>';}
+ for(var i=lvs.length-1;i>=0;i--){var n=lvs[i][0],key="l"+n,locked=n>1&&!S.clear["l"+(n-1)],done=!!S.clear[key],cur=!done&&!locked;
+  h+='<div class="lvnode'+(locked?" lock":done?" done":" cur")+'"'+(locked?"":' onclick="openLv('+n+')"')+'>'+
+  '<div class="ico">'+(done?"✓":locked?"🔒":["📘","🧩","🃏","💬","👑"][n-1])+'</div><div style="flex:1"><div class="nm">'+t(lvs[i][1])+'</div>'+
+  '<div class="st">'+t(lvs[i][2])+' · '+t("passLbl")+" "+lvs[i][3]+(S.best[key]!=null?' · '+t("best")+" "+S.best[key]:"")+(done?' · '+t("cleared"):locked?' · '+t("locked"):"")+'</div></div></div>';}
+ if(S.clear.l5)h+='<button class="btn primary" onclick="scrCert()">🎓 '+t("cert")+'</button>';
+ h+='<button class="btn" onclick="scrIsv()">📖 '+t("isvRef")+'</button>';
+ app(h);}
+function openLv(n){S.resume=null;save();[0,scrL1Learn,scrL2Learn,scrL3Intro,scrMeetSel,function(){startL5(null);}][n]();}
+/* ---- Level 3. 사전 학습 (ISV 카드, 3그룹) ---- */
+var L3_GROUPS=[{tk:"Agentic AI · 모델",te:"Agentic AI · Models",idx:[0,1,2,3]},{tk:"AIOps / MLOps · GPU 운영",te:"AIOps / MLOps · GPU ops",idx:[4,5]},{tk:"연결 · On-Device AI",te:"Integration · On-device AI",idx:[6,7,8]}];
+function scrL3Intro(){if(S.best.l3==null){scrL3Learn();return;}
+ setHud(t("lv3"),null,0,null);renderFoot("home");
+ app('<h2>'+t("lv3")+'</h2><p class="sub" style="margin-bottom:14px">'+t("lv3d")+' · '+t("best")+" "+S.best.l3+'</p>'+
+ '<button class="btn primary" onclick="scrL3Learn()">📖 '+t("l3learn")+'</button>'+
+ '<button class="btn" onclick="startL3(null)">⚡ '+t("l3skip")+'</button>'+
+ '<button class="btn" onclick="scrHome()">'+t("toHome")+'</button>');}
+function scrL3Learn(){var gi=0;renderFoot("home");
+ function draw(){var g=L3_GROUPS[gi];setHud(t("lv3")+" · "+t("learn"),null,(gi/L3_GROUPS.length)*100,null);
+  var h='<div class="dim" style="margin-bottom:6px">'+t("learn")+' · '+(gi+1)+"/"+L3_GROUPS.length+'</div><h2 style="color:#4da3dd">'+esc(S.lang==="ko"?g.tk:g.te)+'</h2>';
+  g.idx.forEach(function(ix){var v=ISVS[ix];h+='<div class="card"><b style="color:#4da3dd">'+esc(v.n)+'</b><p class="sub" style="margin-top:6px">'+esc(S.lang==="ko"?v.ko:v.en)+'</p></div>';});
+  h+='<button class="btn primary" id="nx">'+(gi<L3_GROUPS.length-1?t("next"):t("quiz"))+'</button>';
+  if(gi>0)h+='<button class="btn" id="pv">←</button>';
+  app(h);$("nx").onclick=function(){if(gi<L3_GROUPS.length-1){gi++;draw();}else startL3(null);};if($("pv"))$("pv").onclick=function(){gi--;draw();};}
+ draw();}
+function resumeLabel(){var r=S.resume;if(!r)return "";
+ if(r.k==="meet"){var m=L4_MEETINGS.filter(function(x){return x.id===r.id;})[0];return t("lv4")+" · "+(S.lang==="ko"?m.tk:m.te)+" · "+t("trust")+" "+r.trust+"%";}
+ var map={l1:"lv1",l2m:"lv2",l2k:"lv2",l3:"lv3",l5:"lv5",rv:"note"};return t(map[r.k]||"home")+" · "+((r.i||0)+1);}
+function resumeRestart(){var r=S.resume;S.resume=null;save();if(!r){scrHome();return;}
+ if(r.k==="meet"){playMeet(r.id);return;}
+ if(r.k==="rv"){startReview();return;}
+ var n={l1:1,l2m:2,l2k:2,l3:3,l5:5}[r.k];
+ if(n)openLv(n);else scrHome();}
+function resumeGo(){var r=S.resume;if(!r){scrHome();return;}
+ if(r.k==="meet"){var m=L4_MEETINGS.filter(function(x){return x.id===r.id;})[0];MT={m:m,trust:r.trust,ti:r.ti,log:[]};drawMeet();return;}
+ if(r.k==="l1")startL1Q(r);
+ else if(r.k==="l2m"||r.k==="l2k")startL2(r);
+ else if(r.k==="l3")startL3(r);
+ else if(r.k==="l5")startL5(r);
+ else if(r.k==="rv")startReview();
+ else scrHome();}
+/* ---- ISV ref ---- */
+function scrIsv(){setHud(t("isvRef"),null,0,null);renderFoot("home");
+ var h='<h2>'+t("isvRef")+'</h2>'+ISVS.map(function(x){return '<div class="card"><b style="color:#4da3dd">'+esc(x.n)+'</b><p class="sub" style="margin-top:6px">'+esc(S.lang==="ko"?x.ko:x.en)+'</p></div>';}).join("");
+ h+='<button class="btn" onclick="scrHome()">'+t("toHome")+'</button>';app(h);}
+/* ---- Generic quiz runner ---- */
+var Q=null;
+function startQuiz(cfg){Q={cfg:cfg,i:0,ok:0,combo:0,maxCombo:0,timer:null};
+ if(cfg.res){Q.i=cfg.res.i||0;Q.ok=cfg.res.ok||0;Q.combo=cfg.res.combo||0;Q.maxCombo=cfg.res.mx||0;}
+ nextQ();}
+function qOpts(it){var d=it[S.lang];if(it.type==="ox")return["O","X"];if(it.boss)return d?d.o:it.boss.steps[it.step][S.lang].o;return d.o;}
+function nextQ(){if(Q.timer){clearInterval(Q.timer);Q.timer=null;}
+ var c=Q.cfg;if(Q.i>=c.items.length){S.resume=null;save();c.onDone(Q.ok,c.items.length,Q.maxCombo);return;}
+ if(c.rk){S.resume={k:c.rk,i:Q.i,ok:Q.ok,combo:Q.combo,mx:Q.maxCombo,mOk:(typeof L2R!=="undefined"&&L2R)?L2R.mOk:undefined};save();}
+ var it=c.items[Q.i],d=it.boss?it.boss.steps[it.step][S.lang]:it[S.lang];
+ var passN=Math.ceil(c.passPct/100*c.items.length);
+ setHud(c.title,t("passLbl")+" "+(c.passLbl||passN+"/"+c.items.length)+" · "+t("curLbl")+" "+Q.ok+"/"+Q.i,(Q.i/c.items.length)*100,c.passPct);
+ var qtext=it.boss?(S.lang==="ko"?it.boss.bk:it.boss.be)+"<br><br><b>"+t("step")[it.step]+"</b>":esc(d.q);
+ var h='<div class="dim" style="margin-bottom:6px;display:flex;justify-content:space-between"><span>'+(Q.i+1)+" / "+c.items.length+(Q.combo>=2?' · 🔥 '+t("combo")+" x"+Q.combo:"")+'</span>'+
+ (c.rk?'<span style="cursor:pointer;color:#4da3dd" onclick="if(Q.timer){clearInterval(Q.timer);}scrHome()">✕ '+t("exitS")+'</span>':"")+'</div>';
+ if(c.timed)h+='<div id="tmr" class="timer" style="display:inline-block;margin-bottom:8px">⏱ '+c.timed+'s</div>';
+ var opts=qOpts(it);Q.perm=opts.map(function(_,ii){return ii;});
+ if(it.type!=="ox"){for(var si=Q.perm.length-1;si>0;si--){var sj=Math.floor(Math.random()*(si+1));var tp=Q.perm[si];Q.perm[si]=Q.perm[sj];Q.perm[sj]=tp;}}
+ h+='<div class="qcard" id="qc">'+qtext+'</div><div id="opts">'+Q.perm.map(function(oi,di){return '<button class="btn" onclick="pick('+di+')">'+esc(opts[oi])+'</button>';}).join("")+'</div><div id="fb"></div>';
+ app(h);
+ if(c.timed){Q.left=c.timed;Q.timer=setInterval(function(){Q.left--;var e=$("tmr");if(e)e.textContent="⏱ "+Q.left+"s";if(Q.left<=0){clearInterval(Q.timer);Q.timer=null;pick(-1);}},1000);}}
+function pick(idx){if(Q.timer){clearInterval(Q.timer);Q.timer=null;}
+ var c=Q.cfg,it=c.items[Q.i],d=it.boss?it.boss.steps[it.step][S.lang]:it[S.lang];
+ var ans=it.boss?it.boss.steps[it.step].a:it.a;
+ var origIdx=idx<0?-1:Q.perm[idx];var ok=origIdx===ans;
+ var btns=$("opts").getElementsByClassName("btn");for(var i=0;i<btns.length;i++){btns[i].classList.add("dis");if(Q.perm[i]===ans)btns[i].classList.add("ok");if(i===idx&&!ok)btns[i].classList.add("no");}
+ var fb="";
+ if(ok){Q.ok++;Q.combo++;Q.maxCombo=Math.max(Q.maxCombo,Q.combo);var p=10;if(Q.combo>0&&Q.combo%3===0)p+=5;if(c.timed&&Q.left>0)p+=Q.left;addP(p);if(Q.maxCombo>=5)award("b11");
+  fb='<div class="exp"><b>'+t("correct")+'</b> '+esc(d.exp)+'</div>';}
+ else{Q.combo=0;if(c.penalty)addP(-5);if(c.cat!=="rv")addNote(c.cat,it.id);$("qc").classList.add("shake");
+  fb='<div class="exp" style="border-color:var(--bad)"><b style="color:#f0997b">'+t("wrong")+'</b> '+esc(d.exp)+'</div>';}
+ if(d.say)fb+='<div class="say"><b>💬 '+t("sayLbl")+':</b><br>"'+esc(d.say)+'"</div>';
+ fb+='<button class="btn primary" onclick="this.classList.add(\'dis\');Q.i++;nextQ()">'+t("next")+'</button>';
+ $("fb").innerHTML=fb;window.scrollTo(0,document.body.scrollHeight);}
+/* ---- Level 1. ---- */
+function scrL1Learn(){cardLearn(L1_CARDS,t("lv1"),function(){startL1Q(null);});}
+function startL1Q(res){startQuiz({items:L1_QUIZ,cat:"l1",rk:"l1",res:res,title:t("lv1"),passPct:PASS.l1,penalty:false,onDone:doneL1});}
+function doneL1(ok,n){var acc=Math.round(ok/n*100);finishLevel("l1",acc,acc>=PASS.l1,t("acc")+" "+acc+"%");if(acc===100)award("b6");}
+function cardLearn(cards,title,onStart){setHud(title,null,0,null);renderFoot("home");var i=0;
+ function draw(){var cd=cards[i][S.lang];
+  var h='<div class="dim" style="margin-bottom:6px">'+t("learn")+' · '+(i+1)+"/"+cards.length+'</div>';
+  h+='<div class="card"><h2 style="color:#4da3dd">'+esc(cd.t)+'</h2><p class="sub" style="font-size:14px;margin:6px 0"><b style="color:var(--gold)">"'+esc(cd.a)+'"</b></p><p style="font-size:14px;line-height:1.7">'+esc(cd.d)+'</p></div>';
+  h+='<div class="say"><b>💬 '+t("sayLbl")+':</b><br>"'+esc(cd.s)+'"</div>';
+  h+='<button class="btn primary" id="nx">'+(i<cards.length-1?t("next"):t("quiz"))+'</button>';
+  if(i>0)h+='<button class="btn" id="pv">←</button>';
+  app(h);$("nx").onclick=function(){if(i<cards.length-1){i++;draw();}else onStart();};if($("pv"))$("pv").onclick=function(){i--;draw();};}
+ draw();}
+/* ---- Level 2. ---- */
+function scrL2Learn(){cardLearn(L2_CARDS,t("lv2"),function(){startL2(null);});}
+var L2R=null;
+function startL2(res){L2R={mOk:(res&&res.mOk)||0};var items=L2_MISSIONS.map(function(m){return{id:m.id,type:"mc",a:m.a,ko:{q:m.ko.q,o:L2_TIERS.ko,exp:m.ko.exp,say:m.ko.say},en:{q:m.en.q,o:L2_TIERS.en,exp:m.en.exp,say:m.en.say}};});
+ if(res&&res.k==="l2k"){startL2K(res);return;}
+ startQuiz({items:items,cat:"l2m",rk:"l2m",res:(res&&res.k==="l2m")?res:null,title:t("lv2")+" · "+t("mission"),passPct:PASS.l2/4*100,passLbl:PASS.l2+"/4",penalty:false,onDone:function(ok){L2R.mOk=ok;startL2K(null);}});}
+function startL2K(res){startQuiz({items:L2_QUIZ,cat:"l2k",rk:"l2k",res:res,title:t("lv2"),passPct:75,penalty:false,onDone:function(ok2,n2){var pass=L2R.mOk>=PASS.l2;finishLevel("l2",L2R.mOk*25+ok2*10,pass,t("mission")+" "+L2R.mOk+"/4");}});}
+/* ---- Level 3. ---- */
+function startL3(res){var items=L3_ITEMS.slice();startQuiz({items:items,cat:"l3",rk:"l3",res:res,title:t("lv3"),passPct:PASS.l3,penalty:true,timed:25,onDone:function(ok,n){var acc=Math.round(ok/n*100);finishLevel("l3",acc,acc>=PASS.l3,t("acc")+" "+acc+"%");if(ok===n)award("b7");}});}
+/* ---- finish ---- */
+function finishLevel(key,score,pass,detail){setHud(t(key.replace("l","lv")),null,100,null);renderFoot("home");S.resume=null;
+ if(S.best[key]==null||score>S.best[key])S.best[key]=score;
+ if(pass&&!S.clear[key]){S.clear[key]=true;award("b"+key.slice(1));}
+ hist({t:"level",lv:key,score:score,pass:pass});save();
+ sync({type:"level",level:key,score:score,pass:pass,points:S.pts});
+ var h='<div class="center" style="padding:26px 0"><div style="font-size:44px">'+(pass?"🎉":"😅")+'</div><h2>'+(pass?t("passOk"):t("passNo"))+'</h2>'+
+ '<p class="sub" style="margin:8px 0">'+esc(detail)+' · '+t("score")+" "+score+'</p></div>';
+ if(!pass)h+='<button class="btn primary" onclick="openLv('+key.slice(1)+')">'+t("retry")+'</button>';
+ else if(key==="l4")h+='<button class="btn primary" onclick="openLv(5)">'+t("lv5go")+'</button>';
+ h+='<button class="btn" onclick="scrHome()">'+t("toHome")+'</button>';app(h);}
+/* ---- Level 4. select ---- */
+function scrMeetSel(){setHud(t("lv4"),t("passLbl")+": 4 × "+t("trust")+" ≥ "+PASS.l4+"%",clearedPicks()/4*100,100);renderFoot("home");
+ var rec=L4_MEETINGS.filter(function(m){return S.inds.indexOf(m.ind)>=0;});
+ var oth=L4_MEETINGS.filter(function(m){return S.inds.indexOf(m.ind)<0;});
+ if(!S.l4picks.length){S.l4picks=rec.slice(0,4).map(function(m){return m.id;});while(S.l4picks.length<4&&oth.length)S.l4picks.push(oth[S.l4picks.length-rec.slice(0,4).length].id);save();}
+ var done=Math.min(4,clearedPicks());
+ var h='<h2>'+t("meetSel")+'</h2>';
+ if(S.clear.l4){h+='<div class="card" style="border-color:var(--good);background:#0f3328"><b style="color:#9fe1cb;font-size:14px">'+t("freeT")+'</b><p class="dim" style="margin-top:5px;color:#7fb8a3">'+t("freeD")+'</p></div>';}
+ else{h+='<div class="card" style="border-color:var(--gold)"><b style="color:var(--gold);font-size:15px">🎯 '+t("l4prog1")+" "+done+"/4 — "+(4-done)+t("l4prog2")+'</b>'+
+  '<div class="gauge" style="margin-top:10px"><div class="gf" style="width:'+(done/4*100)+'%"></div></div><p class="dim" style="margin-top:6px">'+t("pick4")+'</p></div>';}
+ h+='<h3>'+t("meetRec")+'</h3>'+rec.map(meetRow).join("");
+ h+='<h3 style="margin-top:14px">'+t("meetAll")+'</h3>'+oth.map(meetRow).join("");
+ h+='<button class="btn" onclick="playMeet(L4_MEETINGS[Math.floor(Math.random()*L4_MEETINGS.length)].id)">🎲 '+t("meetRnd")+'</button>';
+ h+='<button class="btn" onclick="scrHome()">'+t("toHome")+'</button>';app(h);}
+function clearedPicks(){return Object.keys(S.meet).filter(function(id){return S.meet[id]&&S.meet[id].ok;}).length;}
+function meetRow(m){var ind=INDS.filter(function(x){return x.id===m.ind;})[0];var picked=S.l4picks.indexOf(m.id)>=0;var st=S.meet[m.id];
+ return '<div class="card" style="padding:12px 14px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px">'+
+ '<div><b style="font-size:14px">'+esc(S.lang==="ko"?m.tk:m.te)+'</b><div class="dim" style="margin-top:3px"><span class="tag">'+esc(S.lang==="ko"?ind.ko:ind.en)+'</span><span class="tag">'+esc(ROLES[m.role][S.lang])+'</span>'+
+ (st&&st.ok?'<span class="tag g">✓ '+t("trust")+" "+st.best+'%</span>':st?'<span class="tag o">'+t("best")+" "+st.best+'%</span>':"")+(picked?'<span class="tag y">★ '+t("picked")+'</span>':"")+'</div></div></div>'+
+ '<div style="display:flex;gap:8px;margin-top:10px"><button class="btn" style="margin:0;padding:9px;text-align:center;font-size:13px" onclick="togglePick(\''+m.id+'\')">'+(picked?t("unpick"):t("pickBtn"))+'</button>'+
+ '<button class="btn primary" style="margin:0;padding:9px;font-size:13px" onclick="playMeet(\''+m.id+'\')">'+t("startMeet")+'</button></div></div>';}
+function togglePick(id){var i=S.l4picks.indexOf(id);if(i>=0)S.l4picks.splice(i,1);else{if(S.l4picks.length>=4){pop(t("needPick"));return;}S.l4picks.push(id);}save();scrMeetSel();}
+/* ---- Level 4. play ---- */
+var MT=null;
+function playMeet(id){var m=L4_MEETINGS.filter(function(x){return x.id===id;})[0];MT={m:m,trust:50,ti:0,log:[]};drawMeet();}
+function drawMeet(){var m=MT.m,turn=m.turns[MT.ti];
+ S.resume={k:"meet",id:m.id,ti:MT.ti,trust:MT.trust};save();
+ setHud((S.lang==="ko"?m.tk:m.te),t("trust")+" "+MT.trust+"% · "+t("passLbl")+" "+PASS.l4+"%",MT.trust,PASS.l4);
+ var h='<div class="gauge"><div class="gf" style="width:'+MT.trust+'%;background:'+(MT.trust>=PASS.l4?"var(--good)":"var(--bad)")+'"></div><div class="gm" style="left:'+PASS.l4+'%"></div></div>';
+ h+='<div class="dim" style="margin-bottom:10px;display:flex;justify-content:space-between"><span>'+(MT.ti+1)+" / "+m.turns.length+'</span><span style="cursor:pointer;color:#4da3dd" onclick="scrHome()">✕ '+t("exitS")+'</span></div>';
+ MT.log.forEach(function(L){h+=L;});
+ h+='<div class="bubble"><div class="av">🧑‍💼</div><div class="tx">'+esc(S.lang==="ko"?turn.ck:turn.ce)+'</div></div>';
+ h+='<p class="dim" style="margin:8px 0">'+t("turnNote")+'</p><div id="opts">';
+ turn.ch.forEach(function(c,i){h+='<button class="btn" onclick="pickMeet('+i+')">'+esc(S.lang==="ko"?c.k:c.e)+'</button>';});
+ h+='</div><div id="fb"></div>';app(h);}
+function pickMeet(i){var m=MT.m,turn=m.turns[MT.ti],c=turn.ch[i];
+ MT.trust=Math.max(0,Math.min(100,MT.trust+c.d));
+ MT.log.push('<div class="bubble"><div class="av">🧑‍💼</div><div class="tx">'+esc(S.lang==="ko"?turn.ck:turn.ce)+'</div></div>');
+ MT.log.push('<div class="bubble me"><div class="av" style="background:var(--brand)">🙋</div><div class="tx">'+esc(S.lang==="ko"?c.k:c.e)+'</div></div>');
+ MT.log.push('<div class="react'+(c.d>0?" good":"")+'">'+esc(S.lang==="ko"?c.rk:c.re)+'</div>');
+ if(c.b)addP(15);else if(c.d<0)addP(-0);
+ if(!c.b){var best=turn.ch.filter(function(x){return x.b;})[0];MT.log.push('<div class="exp"><b>'+t("better")+':</b> "'+esc(S.lang==="ko"?best.k:best.e)+'"</div>');}
+ if(MT.trust<=0){endMeet(false);return;}
+ MT.ti++;if(MT.ti>=m.turns.length)endMeet(MT.trust>=PASS.l4);else drawMeet();}
+function endMeet(ok){var m=MT.m;var prevOk=!!(S.meet[m.id]&&S.meet[m.id].ok);
+ var st=S.meet[m.id]||{best:0,ok:false};st.best=Math.max(st.best,MT.trust);if(ok)st.ok=true;S.meet[m.id]=st;S.resume=null;save();
+ if(ok){addP(prevOk?10:30);if(MT.trust>=90)award("b8");checkIndBadge();}
+ hist({t:"meet",id:m.id,trust:MT.trust,ok:ok});sync({type:"meeting",id:m.id,trust:MT.trust,ok:ok,points:S.pts});
+ setHud(S.lang==="ko"?m.tk:m.te,null,100,null);
+ var h='<div class="center" style="padding:24px 0"><div style="font-size:44px">'+(ok?"🤝":"🚪")+'</div><h2>'+(ok?t("meetPass"):MT.trust<=0?t("meetFail"):t("meetLow"))+'</h2><p class="sub">'+t("trust")+" "+MT.trust+'%</p></div>';
+ if(!ok)h+='<button class="btn primary" onclick="playMeet(\''+m.id+'\')">'+t("retry")+'</button>';
+ h+='<button class="btn" onclick="checkL4()">'+t("next")+'</button>';app(h);}
+function checkL4(){if(!S.clear.l4&&clearedPicks()>=4){finishLevel("l4",Math.round(avgTrust()),true,t("trust")+" "+t("best")+" "+Math.round(avgTrust())+"%");}else scrMeetSel();}
+function avgTrust(){var s=0,c=0;for(var id in S.meet){if(S.meet[id]&&S.meet[id].ok){s+=S.meet[id].best;c++;}}return c?s/c:0;}
+/* ---- Level 5. ---- */
+function startL5(res){var items=[];L5_BOSS.forEach(function(b,bi){b.steps.forEach(function(st,si){items.push({id:bi+"-"+si,type:"mc",boss:b,step:si});});});
+ startQuiz({items:items,cat:"l5",rk:"l5",res:res,title:t("lv5")+" · "+t("boss"),passPct:PASS.l5,penalty:true,onDone:function(ok,n){var acc=Math.round(ok/n*100);var pass=acc>=PASS.l5;finishLevel("l5",acc,pass,t("acc")+" "+acc+"%");if(pass)setTimeout(scrCert,900);}});}
+/* ---- Certificate ---- */
+function scrCert(){setHud(t("cert"),null,100,null);renderFoot("home");
+ var dt=new Date().toISOString().slice(0,10);
+ var h='<div class="card center" id="certbox" style="border-color:var(--gold);padding:28px 16px"><div style="font-size:44px">🏆</div>'+
+ '<h2 style="color:var(--gold);margin:8px 0">Daol Fusion Master</h2><div style="font-size:17px;font-weight:600">'+esc(S.name)+(S.dept?' · '+esc(S.dept):"")+'</div>'+
+ '<p class="sub" style="margin:8px 0">'+S.pts+' '+t("pts")+' · '+t("badge")+" "+S.badges.length+"/12 · "+dt+'</p>'+
+ '<p class="dim" style="border-top:1px solid var(--line);padding-top:10px;margin-top:8px">'+t("certDone")+'</p></div>';
+ h+='<button class="btn primary" onclick="saveCert()">📥 '+t("certSave")+'</button><button class="btn" onclick="scrHome()">'+t("toHome")+'</button>';
+ app(h);sync({type:"certificate",points:S.pts,badges:S.badges.length});}
+function saveCert(){var cv=document.createElement("canvas");cv.width=800;cv.height=1000;var x=cv.getContext("2d");
+ x.fillStyle="#0d1b2a";x.fillRect(0,0,800,1000);x.strokeStyle="#efb832";x.lineWidth=6;x.strokeRect(30,30,740,940);
+ x.fillStyle="#0060a0";x.fillRect(60,60,680,8);x.textAlign="center";
+ x.fillStyle="#efb832";x.font="bold 54px sans-serif";x.fillText("🏆",400,220);x.fillText("DAOL FUSION MASTER",400,310);
+ x.fillStyle="#e6f1fb";x.font="bold 44px sans-serif";x.fillText(S.name+(S.dept?" · "+S.dept:""),400,430);
+ x.fillStyle="#8fb6d4";x.font="28px sans-serif";x.fillText("DaolFusion Quest — AI Sales Master",400,500);
+ x.fillText(S.pts+" P  ·  "+t("badge")+" "+S.badges.length+"/12",400,560);
+ x.fillText(new Date().toISOString().slice(0,10),400,620);
+ x.fillStyle="#4da3dd";x.font="24px sans-serif";x.fillText(t("certDone"),400,720);
+ x.fillStyle="#5a6b7d";x.font="20px sans-serif";x.fillText("DAOL TS · DaolFusion",400,900);
+ var a=document.createElement("a");a.download="DaolFusion_Master_"+S.name+".png";a.href=cv.toDataURL("image/png");a.click();}
+/* ---- Review note ---- */
+function scrNote(){setHud(t("note"),null,0,null);renderFoot("note");
+ var act=S.notes.filter(function(n){return !n.grad;}),grad=S.notes.filter(function(n){return n.grad;});
+ var h='<h2>'+t("note")+'</h2>';
+ if(!S.notes.length){h+='<p class="sub" style="padding:20px 0">'+t("noteEmpty")+'</p>';}
+ else{if(act.length)h+='<button class="btn primary" onclick="startReview()">📚 '+t("reviewStart")+' ('+act.length+')</button>';
+  S.notes.slice().sort(function(a,b){return b.ts-a.ts;}).forEach(function(n){var it=noteItem(n);if(!it)return;var d=it.boss?it.boss.steps[it.step][S.lang]:it[S.lang];var q=it.boss?(S.lang==="ko"?it.boss.tk:it.boss.te)+" · "+t("step")[it.step]:d.q;
+   h+='<div class="card" style="padding:12px 14px'+(n.grad?";opacity:.55":"")+'"><div style="font-size:13px;line-height:1.5">'+esc(q)+'</div><div class="dim" style="margin-top:6px">'+(n.grad?'<span class="tag g">✓ '+t("grad")+'</span>':'<span class="tag o">'+n.cnt+" "+t("noteTimes")+'</span>')+'</div><div class="exp" style="margin:8px 0 0;font-size:13px">'+esc(d.exp)+'</div></div>';});}
+ app(h);}
+function startReview(){var act=S.notes.filter(function(n){return !n.grad;});var items=act.map(function(n){return noteItem(n);}).filter(Boolean);
+ if(!items.length){scrNote();return;}
+ startQuiz({items:items,cat:"rv",title:t("note"),passPct:100,penalty:false,onDone:function(){scrNote();}});
+ /* review 전용 판정 훅 */
+ var origPick=pick;}
+/* review: pick 내부에서 cat==='rv' 처리 — 노트 streak 갱신 */
+var _pick=pick;
+pick=function(idx){var c=Q.cfg,it=c.items[Q.i];_pick(idx);
+ if(c.cat==="rv"){var ans=it.boss?it.boss.steps[it.step].a:it.a;var oi=idx<0?-1:Q.perm[idx];var n=S.notes.filter(function(x){return x.qid===it.id&&!x.grad;})[0];
+  if(n){if(oi===ans){n.streak=(n.streak||0)+1;if(n.streak>=2){n.grad=true;addP(3);pop("✅ "+t("grad")+" +3 "+t("pts"));if(S.notes.filter(function(x){return x.grad;}).length>=5)award("b10");}}
+  else{n.streak=0;n.cnt++;}save();}}};
+/* ---- History / Badges ---- */
+function scrHist(){setHud(t("hist"),null,0,null);renderFoot("hist");
+ var h='<h2>'+t("hist")+'</h2>';
+ if(!S.hist.length)h+='<p class="sub" style="padding:20px 0">'+t("histEmpty")+'</p>';
+ S.hist.slice().reverse().slice(0,80).forEach(function(e){var d=new Date(e.ts),ds=d.getMonth()+1+"/"+d.getDate()+" "+("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2);var tx="";
+  if(e.ev.t==="level")tx=(e.ev.pass?"✅ ":"❌ ")+t(e.ev.lv.replace("l","lv"))+" · "+t("score")+" "+e.ev.score;
+  else if(e.ev.t==="meet"){var m=L4_MEETINGS.filter(function(x){return x.id===e.ev.id;})[0];tx=(e.ev.ok?"🤝 ":"🚪 ")+(m?(S.lang==="ko"?m.tk:m.te):e.ev.id)+" · "+e.ev.trust+"%";}
+  else if(e.ev.t==="badge"){var b=BADGES.filter(function(x){return x.id===e.ev.id;})[0];tx="🏆 "+(b?(S.lang==="ko"?b.ko[0]:b.en[0]):"");}
+  else tx=JSON.stringify(e.ev);
+  h+='<div class="row"><span style="flex:1;padding-right:8px">'+tx+'</span><span class="dim">'+ds+'</span></div>';});
+ app(h);}
+function scrBadge(){setHud(t("badge"),null,0,null);renderFoot("badge");
+ var h='<h2>'+t("badge")+' ('+S.badges.length+'/12)</h2>';
+ BADGES.forEach(function(b){var on=S.badges.indexOf(b.id)>=0;var L=S.lang==="ko"?b.ko:b.en;
+  h+='<div class="badge'+(on?"":" off")+'"><span class="bi">'+b.i+'</span><div><div class="bn">'+esc(L[0])+'</div><div class="bd">'+esc(L[1])+'</div></div></div>';});
+ app(h);}
+/* ---- boot ---- */
+load();
+var today=new Date().toISOString().slice(0,10);
+if(S.lastDay!==today){S.sessions++;S.lastDay=today;save();if(S.sessions>=5)award("b12");}
+flushQueue();
+/* 뒤로가기 가드: 페이지 이탈 대신 홈으로 (진행은 자동 저장됨)
+   Edge/Chrome은 사용자 조작 전에 쌓은 히스토리를 뒤로가기에서 건너뛰므로,
+   첫 클릭/터치 순간에 가드를 심는다 */
+(function(){
+ var armed=false;
+ function arm(){try{history.pushState({dfq:1},"");}catch(e){}}
+ function onFirst(){if(armed)return;armed=true;arm();arm();}
+ try{
+  ["pointerdown","touchstart","keydown"].forEach(function(ev){
+   window.addEventListener(ev,onFirst,{passive:true});});
+  window.addEventListener("popstate",function(){
+   arm();
+   if(typeof Q!=="undefined"&&Q&&Q.timer){clearInterval(Q.timer);Q.timer=null;}
+   if(S&&S.onboarded)scrHome();});
+ }catch(e){}
+})();
+if(!S.onboarded)scrOnboard();else scrHome();
+</script>
+</body>
+</html>
